@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Set up Buildx for multi-platform builds and caching
       - name: Set up Docker Buildx
