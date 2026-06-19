@@ -1,0 +1,15 @@
+version: 2
+updates:
+  # Check for updates to GitHub Actions in .github/workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+
+  # Check for updates to Docker images in Dockerfile and docker-compose.yml
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
