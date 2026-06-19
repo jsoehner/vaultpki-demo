@@ -1,0 +1,11 @@
+# Vault database persistence
+data/
+
+# Generated Vault keys and tokens
+vault-keys.txt
+
+# Generated CSRs and Certificates
+*.csr
+*.pem
+*.cert.pem
+agent/token

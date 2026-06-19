@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  vault:
+    image: hashicorp/vault:latest
+    container_name: vault-pki-demo
+    ports:
+      - "8200:8200"
+    volumes:
+      - ./config:/vault/config
+      - ./data:/vault/file
+    environment:
+      - VAULT_ADDR=http://127.0.0.1:8200
+      - VAULT_API_ADDR=http://127.0.0.1:8200
+    command: server
+    cap_add:
+      - IPC_LOCK
+
+  nginx:
+    image: nginx:latest
+    container_name: demo-nginx
+    ports:
+      - "8443:443"
+    volumes:
+      - ./certs:/certs
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    command: /bin/sh -c "while [ ! -f /certs/test.example.com.crt ]; do sleep 1; done; exec nginx -g 'daemon off;'"
+
+  vault-agent:
+    image: hashicorp/vault:latest
+    container_name: vault-agent
+    depends_on:
+      - vault
+      - nginx
+    pid: "service:nginx"
+    user: "root"
+    volumes:
+      - ./agent:/vault/agent
+      - ./certs:/certs
+    environment:
+      - VAULT_ADDR=http://vault:8200
+    entrypoint: ["vault", "agent", "-config=/vault/agent/agent-config.hcl", "-log-level=debug"]
