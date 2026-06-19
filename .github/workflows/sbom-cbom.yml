@@ -1,0 +1,45 @@
+name: Generate SBOM and CBOM
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  generate-boms:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create oss directory
+        run: mkdir -p oss
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          format: spdx-json
+          output-file: oss/sbom.spdx.json
+
+      - name: Set up Node.js for cdxgen
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install cdxgen
+        run: npm install -g @cyclonedx/cdxgen
+
+      - name: Generate CBOM
+        run: cdxgen --include-crypto -o oss/cbom.json .
+
+      - name: Upload BOM Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: oss-boms
+          path: oss/
+          retention-days: 30
