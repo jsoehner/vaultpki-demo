@@ -55,7 +55,7 @@ jobs:
       # Build and push Docker image (push only on push to branches/tags, not PRs)
       - name: Build and push Docker image
         id: build-and-push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
