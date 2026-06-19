@@ -27,7 +27,7 @@ jobs:
           output-file: oss/sbom.spdx.json
 
       - name: Set up Node.js for cdxgen
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
 
