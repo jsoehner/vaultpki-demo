@@ -2,6 +2,11 @@
 set -e
 
 # Ensure dependencies are available (like jq)
+if ! command -v jq &> /dev/null; then
+    echo "Error: jq is required but not installed. Please install jq and try again." >&2
+    exit 1
+fi
+
 echo "Waiting for Vault to start..."
 sleep 3
 

@@ -9,3 +9,6 @@ vault-keys.txt
 *.pem
 *.cert.pem
 agent/token
+agent/roleid
+agent/secretid
+

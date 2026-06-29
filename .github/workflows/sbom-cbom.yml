@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@692973e3d9371296bd40050516b7e0d37e6f6630 # v4.1.7
 
       - name: Create oss directory
         run: mkdir -p oss
@@ -24,14 +24,14 @@ jobs:
         run: docker build -t my-demo-app:local .
 
       - name: Generate SBOM from Container Image
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.16.1
         with:
           image: my-demo-app:local
           format: spdx-json
           output-file: oss/sbom.spdx.json
 
       - name: Set up Node.js for cdxgen
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.0.3
         with:
           node-version: '20'
 
@@ -42,7 +42,7 @@ jobs:
         run: cdxgen -t docker --include-crypto -o oss/cbom.json my-demo-app:local
 
       - name: Upload BOM Artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.3.3
         with:
           name: oss-boms
           path: oss/
