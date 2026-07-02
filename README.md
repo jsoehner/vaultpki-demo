@@ -49,3 +49,9 @@ When upgrading the Gitleaks action to `@v3` (for Node 24 support), you might enc
 
 ### QEMU Cache Locking in Actions
 If you see a warning like `Unable to reserve cache with key ... another job may be creating this cache`, it is a race condition caused by concurrent jobs (e.g., a push and PR trigger running simultaneously) trying to save the exact same QEMU cache. This is a benign warning, safely ignored, and won't fail your pipeline.
+
+### Setup-Trivy Action Resolution Errors
+If you pin the `aquasecurity/trivy-action` to a specific version (e.g., `v0.28.0`), it may suddenly fail with `Unable to resolve action aquasecurity/setup-trivy@v0.2.1`. This happens because a security incident forced the maintainers to delete older version tags for `setup-trivy`. To fix this, update your workflow to use `aquasecurity/trivy-action@master` (or a release `>= v0.35.0`) which points to known-secure dependencies.
+
+### Docker Build Context Permissions
+If your CI workflow (or a local build) runs `docker build .` in the same directory where Vault is running, Docker will attempt to copy the `data/` directory (including `data/raft`) into the build context. Because this folder is owned by root, Docker will throw a `permission denied` error. Always use a `.dockerignore` file to exclude sensitive/system directories (like `.git`, `data`, `certs`, `agent`) from your build context.
