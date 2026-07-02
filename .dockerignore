@@ -1,0 +1,7 @@
+.git
+.github
+data
+certs
+agent
+config
+vault-keys.txt

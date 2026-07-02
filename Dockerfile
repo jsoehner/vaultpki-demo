@@ -1,7 +1,8 @@
 FROM alpine:latest
 
-# Install necessary utilities for our scripts (bash, jq, curl, docker-cli)
-RUN apk add --no-cache bash jq curl docker-cli
+# Upgrade existing packages to patch vulnerabilities and install necessary utilities
+RUN apk upgrade --no-cache && \
+    apk add --no-cache bash jq curl docker-cli
 
 # Set working directory
 WORKDIR /app
