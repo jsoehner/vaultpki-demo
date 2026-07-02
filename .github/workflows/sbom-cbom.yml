@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@692973e3d9371296bd40050516b7e0d37e6f6630 # v4.1.7
+        uses: actions/checkout@v7
 
       - name: Create oss directory
         run: mkdir -p oss
@@ -31,7 +31,7 @@ jobs:
           output-file: oss/sbom.spdx.json
 
       - name: Set up Node.js for cdxgen
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.0.3
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
 

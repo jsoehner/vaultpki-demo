@@ -39,3 +39,13 @@ This project incorporates strict security practices:
 2. **Network Isolation**: All forwarded ports (Vault on `8200`, NGINX on `8443`) bind to `127.0.0.1` inside `docker-compose.yml` to limit exposure to the local host interface.
 3. **Vulnerability Scanning**: A weekly security workflow ([scan.yml](file://.github/workflows/scan.yml)) scans the repository and the built Docker image using Trivy, with all GitHub Action steps pinned to immutable commit SHAs for supply chain security.
 
+## Gotchas & Lessons Learned
+
+### GitHub Actions Node 20 Deprecation
+When a GitHub Action runner complains about Node 20 deprecation (`Node.js 20 is deprecated... forced to run on Node.js 24`), simply updating `setup-node` does not fix warnings from third-party actions. You **must** bump the major version of the affected actions. For example, `actions/checkout` must be bumped to `@v7`, and Docker actions (e.g., `docker/build-push-action`) often must be bumped to `@v7` as well.
+
+### Gitleaks Action Quirks
+When upgrading the Gitleaks action to `@v3` (for Node 24 support), you might encounter an `Unexpected input(s) 'args'` error. This occurs because strict input validation rejects the `args` parameter in `v3`. The solution is to remove the `with: args: ...` block entirely, as the action now automatically executes the `detect` command.
+
+### QEMU Cache Locking in Actions
+If you see a warning like `Unable to reserve cache with key ... another job may be creating this cache`, it is a race condition caused by concurrent jobs (e.g., a push and PR trigger running simultaneously) trying to save the exact same QEMU cache. This is a benign warning, safely ignored, and won't fail your pipeline.
