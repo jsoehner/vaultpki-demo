@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Run Trivy vulnerability scanner in repo mode
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+        uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
           ignore-unfixed: true
@@ -32,7 +32,7 @@ jobs:
         run: docker build -t my-demo-app:local .
 
       - name: Run Trivy vulnerability scanner on Docker image
-        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'my-demo-app:local'
           format: 'table'
