@@ -42,7 +42,7 @@ jobs:
         run: cdxgen -t docker --include-crypto -o oss/cbom.json my-demo-app:local
 
       - name: Upload BOM Artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.3.3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.3.3
         with:
           name: oss-boms
           path: oss/
