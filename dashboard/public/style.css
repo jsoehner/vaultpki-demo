@@ -23,7 +23,7 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
-  padding: 2rem;
+  padding: 1.25rem;
   position: relative;
 }
 
@@ -67,9 +67,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 1.5rem;
+  padding-bottom: 1rem;
 }
 
 .logo-area {
@@ -126,9 +126,9 @@ body {
 /* Dashboard Grid */
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 2rem;
-  max-width: 1400px;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.25rem;
+  max-width: 1300px;
   margin: 0 auto;
 }
 
@@ -144,12 +144,12 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-color);
-  border-radius: 1.25rem;
-  padding: 1.75rem;
+  border-radius: 1rem;
+  padding: 1.25rem;
   box-shadow: var(--card-shadow);
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .card h2 {
@@ -171,8 +171,8 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem 0;
+  gap: 0.25rem;
+  padding: 0.5rem 0;
 }
 
 .chain-node {
@@ -180,8 +180,8 @@ body {
   max-width: 500px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--border-color);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
+  border-radius: 0.65rem;
+  padding: 0.85rem;
   position: relative;
   transition: all 0.3s ease;
 }
@@ -247,7 +247,7 @@ body {
 
 .connector-line {
   width: 2px;
-  height: 25px;
+  height: 12px;
   background: linear-gradient(180deg, var(--border-color) 0%, rgba(255, 255, 255, 0.15) 100%);
 }
 
