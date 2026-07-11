@@ -133,8 +133,10 @@ function renderDashboard() {
     logList.innerHTML = '<div class="log-placeholder">Waiting for rotation events...</div>';
     countSpan.textContent = '0 rotations tracked';
   } else {
-    countSpan.textContent = `${rotationHistory.length} rotation${rotationHistory.length > 1 ? 's' : ''} tracked`;
-    logList.innerHTML = rotationHistory.map(log => {
+    // Explicitly sort descending by timestamp to ensure most recent is at the top
+    const sortedHistory = [...rotationHistory].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    countSpan.textContent = `${sortedHistory.length} rotation${sortedHistory.length > 1 ? 's' : ''} tracked`;
+    logList.innerHTML = sortedHistory.map(log => {
       const time = new Date(log.timestamp).toLocaleTimeString();
       return `
         <div class="log-item">

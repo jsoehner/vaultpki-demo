@@ -144,6 +144,7 @@ const server = http.createServer((req, res) => {
   // API Status Endpoint
   if (req.url === '/api/status') {
     const certs = getCertDetails();
+    rotationHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       certs: certs || [],
