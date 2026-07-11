@@ -1,36 +1,63 @@
 # HashiCorp Vault PKI Demonstration
 
-## The Problem
-Managing TLS/SSL certificates for internal infrastructure (microservices, internal web apps, databases) is notoriously difficult. Common anti-patterns include:
-1. **Self-signed certificates everywhere**: Hard to manage trust across systems.
-2. **Long-lived certificates**: Increases the risk of compromise if a private key is leaked, and manual rotation is often forgotten until an outage occurs.
-3. **Manual OpenSSL commands**: Requires administrators to manually generate CSRs, sign them, and distribute them securely, which does not scale.
+A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)** using **HashiCorp Vault** as a private Certificate Authority (CA) to orchestrate real-time, zero-downtime certificate rotation for local services.
 
-## The Solution
-This demonstration sets up a robust, scalable **Public Key Infrastructure (PKI)** using **HashiCorp Vault**. Vault acts as your own private Certificate Authority (CA), enabling automated, API-driven generation of short-lived certificates.
+---
 
-### What this Demo Does
-Using `docker-compose` and a setup script (`setup-pki.sh`), this project spins up a local Vault instance and automatically configures a secure, tiered PKI system:
+## Quick Start
 
-1. **Root CA Initialization**: Generates an internal Root Certificate Authority. In a production environment, this root CA is typically kept completely offline.
-2. **Intermediate CA Provisioning**: Generates an Intermediate Certificate Authority signed by the Root CA. This is the active CA used to issue actual endpoint certificates.
-3. **Role Configuration**: Defines a strict role (`web-server`) that dictates the rules for issued certificates (e.g., restricting issuance to the `example.com` domain and its subdomains, with maximum TTLs).
-
-By providing an API to issue certificates dynamically, you can easily integrate Vault into your CI/CD pipelines, configuration management tools (like Ansible, Chef, Terraform), or directly into your application startup scripts.
-
-## How to Run
-
-1. Start the Vault server:
+1. **Spin up the stack**:
    ```bash
    docker-compose up -d
    ```
+   This starts the Vault server, NGINX web server, the automated Vault initialization agent, and the live dashboard.
 
-2. Run the automated setup script to initialize, unseal, and configure the PKI structure:
+2. **Wait for automated initialization**:
+   The `vault-init` container will automatically run the setup, unseal Vault, configure the PKI engines, generate CA certs, configure AppRoles, and write authorization keys.
+
+3. **Check the Live Dashboard**:
+   Open [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the live trust chain and real-time rotation monitoring.
+
+4. **Watch rotation via CLI**:
    ```bash
-   ./setup-pki.sh
+   ./watch-rotation.sh
    ```
 
-3. Once setup is complete, you can issue a certificate for your domain using the Vault API/CLI!
+---
+
+## Commands
+
+| Command / Run Tool | Scope | Description |
+|--------------------|-------|-------------|
+| `docker-compose up -d` | Docker Stack | Starts all services (Vault, NGINX, Vault Agent, Vault Init, Dashboard) |
+| `docker-compose down` | Docker Stack | Stops and cleans up all active container resources |
+| `./setup-pki.sh` | Shell Script | Manual wrapper for PKI configuration (fallback/alternative to `vault-init`) |
+| `./watch-rotation.sh` | Shell Script | CLI monitor that outputs certificate information on file updates |
+| `./check-cert.sh` | Shell Script | Checks the details of the generated leaf certificate |
+| `npm install` | Local Node.js | Installs development tools and type mappings |
+| `npm run dashboard` | Local Node.js | Launches the monitoring dashboard backend server locally |
+| `python3 hamming_distance.py` | Python Script | Runs local test cases for the Hamming distance utility |
+
+---
+
+## Architecture & Decisions
+
+The demo environment consists of the following components:
+1. **Vault (CA Host)**: Manages Root and Intermediate CAs.
+2. **Vault Init**: Automatically provisions and configures engines, roles, policies, and credentials (see [ADR-001](file://docs/decisions/0001-automated-vault-initialization.md)).
+3. **Vault Agent**: Securely caches credentials and automatically fetches new certificates when they are near expiration.
+4. **NGINX**: Serves secure HTTPS traffic. It reloads certificates with zero-downtime upon receiving a reload signal from the Vault Agent.
+5. **PKI Monitor Dashboard**: Exposes SSE stream of rotation events (see [ADR-002](file://docs/decisions/0002-real-time-pki-dashboard.md)).
+6. **TypeScript Template**: Prepared structure for compiled backend features (see [ADR-003](file://docs/decisions/0003-typescript-and-package-setup.md)).
+7. **Hamming Distance Utility**: Standalone Python module for validation logic (see [ADR-004](file://docs/decisions/0004-hamming-distance-python-utility.md)).
+
+For in-depth architectural choices, context, and consequences, consult our Architecture Decision Records:
+- [ADR-001: Automated Vault PKI Initialization](file://docs/decisions/0001-automated-vault-initialization.md)
+- [ADR-002: Real-time PKI and Certificate Rotation Dashboard](file://docs/decisions/0002-real-time-pki-dashboard.md)
+- [ADR-003: TypeScript and Package Configuration](file://docs/decisions/0003-typescript-and-package-setup.md)
+- [ADR-004: Hamming Distance Python Utility](file://docs/decisions/0004-hamming-distance-python-utility.md)
+
+---
 
 ## Security & Workflows
 

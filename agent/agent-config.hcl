@@ -10,7 +10,7 @@ auto_auth {
     config = {
       role_id_file_path = "/vault/agent/roleid"
       secret_id_file_path = "/vault/agent/secretid"
-      remove_secret_id_file_after_reading = true
+      remove_secret_id_file_after_reading = false
     }
   }
 

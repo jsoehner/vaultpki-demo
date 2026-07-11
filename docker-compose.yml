@@ -26,12 +26,28 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     command: /bin/sh -c "while [ ! -f /certs/test.example.com.crt ]; do sleep 1; done; exec nginx -g 'daemon off;'"
 
+  vault-init:
+    image: hashicorp/vault:latest
+    container_name: vault-init
+    depends_on:
+      - vault
+    volumes:
+      - ./config:/vault/config
+      - ./agent:/vault/agent
+    environment:
+      - VAULT_ADDR=http://vault:8200
+    entrypoint: ["/bin/sh", "/vault/config/vault-init.sh"]
+
   vault-agent:
     image: hashicorp/vault:latest
     container_name: vault-agent
     depends_on:
-      - vault
-      - nginx
+      vault:
+        condition: service_started
+      nginx:
+        condition: service_started
+      vault-init:
+        condition: service_completed_successfully
     pid: "service:nginx"
     user: "root"
     volumes:
@@ -40,3 +56,18 @@ services:
     environment:
       - VAULT_ADDR=http://vault:8200
     entrypoint: ["vault", "agent", "-config=/vault/agent/agent-config.hcl", "-log-level=debug"]
+
+  dashboard:
+    image: node:alpine
+    container_name: vault-pki-dashboard
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./certs:/usr/src/app/certs
+      - ./dashboard:/usr/src/app
+    environment:
+      - PORT=8080
+      - CERT_PATH=/usr/src/app/certs/test.example.com.crt
+    working_dir: /usr/src/app
+    command: node server.js
+

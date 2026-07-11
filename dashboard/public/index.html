@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vault PKI Real-Time Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="glow-container">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+  </div>
+
+  <header class="app-header">
+    <div class="logo-area">
+      <div class="logo-icon">🔑</div>
+      <div>
+        <h1>Vault PKI Live Monitor</h1>
+        <p class="subtitle">Real-time Automated Certificate Lifecycle & Rotation</p>
+      </div>
+    </div>
+    <div class="system-status">
+      <span class="status-indicator active"></span>
+      <span class="status-text">Connected to Live Stream</span>
+    </div>
+  </header>
+
+  <main class="dashboard-grid">
+    <!-- Active trust chain visualizer -->
+    <section class="card chain-card">
+      <h2>PKI Trust Chain Hierarchy</h2>
+      <div class="chain-flow">
+        <div class="chain-node root-node" id="root-ca-card">
+          <div class="node-badge">Root CA</div>
+          <h3 id="root-cn">Loading Root CA...</h3>
+          <div class="node-meta">
+            <span class="label">Serial:</span> <span id="root-serial" class="mono">--</span>
+          </div>
+        </div>
+        <div class="chain-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow">▼</div>
+        </div>
+        <div class="chain-node intermediate-node" id="int-ca-card">
+          <div class="node-badge">Intermediate CA</div>
+          <h3 id="int-cn">Loading Intermediate...</h3>
+          <div class="node-meta">
+            <span class="label">Serial:</span> <span id="int-serial" class="mono">--</span>
+          </div>
+        </div>
+        <div class="chain-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow">▼</div>
+        </div>
+        <div class="chain-node leaf-node active-node" id="leaf-cert-card">
+          <div class="node-badge">Leaf Certificate</div>
+          <h3 id="leaf-cn">test.example.com</h3>
+          <div class="node-meta">
+            <span class="label">Serial:</span> <span id="leaf-serial" class="mono">--</span>
+            <span class="label">Issuer:</span> <span id="leaf-issuer">--</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Certificate TTL & Live Countdown -->
+    <section class="card countdown-card">
+      <h2>Certificate Validity Lifetime</h2>
+      <div class="countdown-container">
+        <div class="progress-ring-container">
+          <svg class="progress-ring" width="200" height="200">
+            <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.05)" stroke-width="12" fill="transparent" r="85" cx="100" cy="100" />
+            <circle id="progress-circle" class="progress-ring__circle" stroke="url(#gradient)" stroke-width="12" stroke-dasharray="534.07" stroke-dashoffset="0" fill="transparent" r="85" cx="100" cy="100" />
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#3b82f6" />
+                <stop offset="100%" stop-color="#8b5cf6" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="countdown-text">
+            <span id="countdown-val" class="time-val">--</span>
+            <span class="time-unit">sec remaining</span>
+          </div>
+        </div>
+      </div>
+      <div class="ttl-details">
+        <div class="ttl-bar">
+          <span class="label">Valid From:</span>
+          <span id="valid-from" class="value mono">--</span>
+        </div>
+        <div class="ttl-bar">
+          <span class="label">Valid To:</span>
+          <span id="valid-to" class="value mono">--</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Event Stream Log -->
+    <section class="card logs-card">
+      <div class="card-header-actions">
+        <h2>Rotation History</h2>
+        <span class="counter" id="rotation-count">0 rotations tracked</span>
+      </div>
+      <div class="log-list" id="log-list">
+        <!-- Dynamic logs insertion -->
+        <div class="log-placeholder">Waiting for rotation events...</div>
+      </div>
+    </section>
+
+    <!-- Details/Architecture Information -->
+    <section class="card info-card">
+      <h2>How the Demo Works</h2>
+      <div class="info-content">
+        <p>This demo leverages <strong>HashiCorp Vault</strong> as a private CA to issue short-lived certificates dynamically.</p>
+        <ul>
+          <li><strong>Vault:</strong> Root and Intermediate CA mounts manage cryptographic trust keys.</li>
+          <li><strong>Vault Agent:</strong> Periodically authenticates using AppRole, monitors templates, and requests new certificates with a 1-minute TTL.</li>
+          <li><strong>NGINX:</strong> Serves secure traffic on port <code>8443</code>. Upon rotation, Vault Agent signals NGINX (via SIGHUP) to reload certificates with zero downtime.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+  
+  <script src="app.js"></script>
+</body>
+</html>

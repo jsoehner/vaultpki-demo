@@ -1,0 +1,17 @@
+{
+  "name": "vaultpki-demo",
+  "version": "1.0.0",
+  "description": "Vault PKI Demo App",
+  "main": "index.js",
+  "scripts": {
+    "dashboard": "node dashboard/server.js"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "undici-types": "^8.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1",
+    "typescript": "^7.0.2"
+  }
+}

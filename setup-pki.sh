@@ -97,7 +97,7 @@ EOF'
 
 docker exec vault-pki-demo vault write auth/approle/role/web-server-role \
     policies="cert-issuer" \
-    secret_id_ttl=0 \
+    secret_id_ttl=720h \
     token_num_uses=0 \
     token_ttl=1h \
     token_max_ttl=4h \
