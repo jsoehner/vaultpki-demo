@@ -36,6 +36,7 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 | `./check-cert.sh` | Shell Script | Checks the details of the generated leaf certificate |
 | `npm install` | Local Node.js | Installs development tools and type mappings |
 | `npm run dashboard` | Local Node.js | Launches the monitoring dashboard backend server locally |
+| `npm test` | Local Node.js | Runs the automated Puppeteer browser integration test |
 | `python3 hamming_distance.py` | Python Script | Runs local test cases for the Hamming distance utility |
 
 ---
@@ -47,15 +48,17 @@ The demo environment consists of the following components:
 2. **Vault Init**: Automatically provisions and configures engines, roles, policies, and credentials (see [ADR-001](file://docs/decisions/0001-automated-vault-initialization.md)).
 3. **Vault Agent**: Securely caches credentials and automatically fetches new certificates when they are near expiration.
 4. **NGINX**: Serves secure HTTPS traffic. It reloads certificates with zero-downtime upon receiving a reload signal from the Vault Agent.
-5. **PKI Monitor Dashboard**: Exposes SSE stream of rotation events (see [ADR-002](file://docs/decisions/0002-real-time-pki-dashboard.md)).
+5. **PKI Monitor Dashboard**: Exposes SSE stream of rotation events and includes manual triggers (see [ADR-002](file://docs/decisions/0002-real-time-pki-dashboard.md) and [ADR-005](file://docs/decisions/0005-interactive-rotation-and-puppeteer-testing.md)).
 6. **TypeScript Template**: Prepared structure for compiled backend features (see [ADR-003](file://docs/decisions/0003-typescript-and-package-setup.md)).
 7. **Hamming Distance Utility**: Standalone Python module for validation logic (see [ADR-004](file://docs/decisions/0004-hamming-distance-python-utility.md)).
+8. **Automated UI Test Suite**: Puppeteer-based headless browser tests to verify UI responsiveness and SSE rotation triggers (see [ADR-005](file://docs/decisions/0005-interactive-rotation-and-puppeteer-testing.md)).
 
 For in-depth architectural choices, context, and consequences, consult our Architecture Decision Records:
 - [ADR-001: Automated Vault PKI Initialization](file://docs/decisions/0001-automated-vault-initialization.md)
 - [ADR-002: Real-time PKI and Certificate Rotation Dashboard](file://docs/decisions/0002-real-time-pki-dashboard.md)
 - [ADR-003: TypeScript and Package Configuration](file://docs/decisions/0003-typescript-and-package-setup.md)
 - [ADR-004: Hamming Distance Python Utility](file://docs/decisions/0004-hamming-distance-python-utility.md)
+- [ADR-005: Interactive Certificate Rotation and Puppeteer UI Testing](file://docs/decisions/0005-interactive-rotation-and-puppeteer-testing.md)
 
 ---
 

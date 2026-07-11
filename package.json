@@ -4,7 +4,8 @@
   "description": "Vault PKI Demo App",
   "main": "index.js",
   "scripts": {
-    "dashboard": "node dashboard/server.js"
+    "dashboard": "node dashboard/server.js",
+    "test": "node dashboard_test.js"
   },
   "license": "ISC",
   "dependencies": {
@@ -12,6 +13,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.1.1",
+    "puppeteer": "^25.3.0",
     "typescript": "^7.0.2"
   }
 }

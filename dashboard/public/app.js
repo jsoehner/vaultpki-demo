@@ -29,6 +29,50 @@ function formatSerial(serial) {
   return serial.substring(0, 8) + '...' + serial.substring(serial.length - 8);
 }
 
+// Expand/Collapse Details
+function toggleDetails(id) {
+  const details = document.getElementById(id);
+  details.classList.toggle('expanded');
+}
+
+// Show toast notification
+function showToast() {
+  const toast = document.getElementById('toast');
+  toast.classList.add('show');
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 4000);
+}
+
+// Force a manual certificate rotation
+async function triggerRotation() {
+  const btn = document.getElementById('rotate-btn');
+  const spinner = document.getElementById('btn-spinner');
+  const text = document.getElementById('btn-text');
+
+  btn.disabled = true;
+  spinner.style.display = 'inline-block';
+  text.textContent = ' Rotating...';
+
+  try {
+    const res = await fetch('/api/rotate', { method: 'POST' });
+    const data = await res.json();
+    if (!data.success) {
+      console.error('Rotation trigger failed:', data.error);
+      alert('Rotation failed: ' + data.error);
+      btn.disabled = false;
+      spinner.style.display = 'none';
+      text.textContent = '⚡ Force Instant Rotation';
+    }
+  } catch (err) {
+    console.error('Error triggering rotation:', err);
+    alert('Error connecting to backend: ' + err.message);
+    btn.disabled = false;
+    spinner.style.display = 'none';
+    text.textContent = '⚡ Force Instant Rotation';
+  }
+}
+
 // Render dynamic elements
 function renderDashboard() {
   if (!certsData || certsData.length === 0) return;
@@ -43,6 +87,11 @@ function renderDashboard() {
     document.getElementById('root-cn').textContent = rootCA.subject.replace('CN=', '');
     document.getElementById('root-serial').textContent = formatSerial(rootCA.serialNumber);
     document.getElementById('root-serial').title = rootCA.serialNumber;
+    
+    document.getElementById('root-detail-issuer').textContent = rootCA.issuer;
+    document.getElementById('root-detail-from').textContent = formatDate(rootCA.validFrom);
+    document.getElementById('root-detail-to').textContent = formatDate(rootCA.validTo);
+    document.getElementById('root-detail-fp').textContent = rootCA.fingerprint;
   }
 
   // Intermediate CA Card
@@ -50,6 +99,11 @@ function renderDashboard() {
     document.getElementById('int-cn').textContent = intCA.subject.replace('CN=', '');
     document.getElementById('int-serial').textContent = formatSerial(intCA.serialNumber);
     document.getElementById('int-serial').title = intCA.serialNumber;
+
+    document.getElementById('int-detail-issuer').textContent = intCA.issuer;
+    document.getElementById('int-detail-from').textContent = formatDate(intCA.validFrom);
+    document.getElementById('int-detail-to').textContent = formatDate(intCA.validTo);
+    document.getElementById('int-detail-fp').textContent = intCA.fingerprint;
   }
 
   // Leaf Cert Card
@@ -61,6 +115,10 @@ function renderDashboard() {
     
     document.getElementById('valid-from').textContent = formatDate(leaf.validFrom);
     document.getElementById('valid-to').textContent = formatDate(leaf.validTo);
+
+    document.getElementById('leaf-detail-from').textContent = formatDate(leaf.validFrom);
+    document.getElementById('leaf-detail-to').textContent = formatDate(leaf.validTo);
+    document.getElementById('leaf-detail-fp').textContent = leaf.fingerprint;
 
     // Update Expiration Target
     expirationTime = new Date(leaf.validTo).getTime();
@@ -153,6 +211,15 @@ function connectSSE() {
         certsData = data.certs;
         rotationHistory = data.history;
         renderDashboard();
+        showToast();
+
+        // Visual feedback on rotate button loading reset
+        const btn = document.getElementById('rotate-btn');
+        const spinner = document.getElementById('btn-spinner');
+        const text = document.getElementById('btn-text');
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        text.textContent = '⚡ Force Instant Rotation';
         
         // Brief visual flash on rotation
         const leafCard = document.getElementById('leaf-cert-card');

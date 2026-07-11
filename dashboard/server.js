@@ -100,12 +100,44 @@ const server = http.createServer((req, res) => {
   if (origin && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:') || origin === 'http://localhost' || origin === 'http://127.0.0.1')) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
     res.end();
+    return;
+  }
+
+  // API Rotate Endpoint
+  if (req.url === '/api/rotate' && req.method === 'POST') {
+    const options = {
+      socketPath: '/var/run/docker.sock',
+      path: '/v1.41/containers/vault-agent/restart',
+      method: 'POST'
+    };
+
+    const dockerReq = http.request(options, (dockerRes) => {
+      let data = '';
+      dockerRes.on('data', chunk => data += chunk);
+      dockerRes.on('end', () => {
+        if (dockerRes.statusCode >= 200 && dockerRes.statusCode < 300) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, message: 'Vault Agent restarted successfully' }));
+        } else {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: `Docker API returned status: ${dockerRes.statusCode}`, details: data }));
+        }
+      });
+    });
+
+    dockerReq.on('error', (err) => {
+      console.error('Docker socket connection error:', err);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: err.message }));
+    });
+
+    dockerReq.end();
     return;
   }
 

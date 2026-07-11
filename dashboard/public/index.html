@@ -10,6 +10,11 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="toast" class="toast-notification">
+    <span class="toast-icon">⚡</span>
+    <span class="toast-text">Certificate Rotated Successfully!</span>
+  </div>
+
   <div class="glow-container">
     <div class="glow-orb orb-1"></div>
     <div class="glow-orb orb-2"></div>
@@ -32,36 +37,56 @@
   <main class="dashboard-grid">
     <!-- Active trust chain visualizer -->
     <section class="card chain-card">
-      <h2>PKI Trust Chain Hierarchy</h2>
+      <div class="card-header-actions">
+        <h2>PKI Trust Chain Hierarchy</h2>
+        <span class="info-badge">Click nodes for details</span>
+      </div>
       <div class="chain-flow">
-        <div class="chain-node root-node" id="root-ca-card">
+        <div class="chain-node root-node" id="root-ca-card" onclick="toggleDetails('root-details')">
           <div class="node-badge">Root CA</div>
           <h3 id="root-cn">Loading Root CA...</h3>
           <div class="node-meta">
             <span class="label">Serial:</span> <span id="root-serial" class="mono">--</span>
           </div>
-        </div>
-        <div class="chain-connector">
-          <div class="connector-line"></div>
-          <div class="connector-arrow">▼</div>
-        </div>
-        <div class="chain-node intermediate-node" id="int-ca-card">
-          <div class="node-badge">Intermediate CA</div>
-          <h3 id="int-cn">Loading Intermediate...</h3>
-          <div class="node-meta">
-            <span class="label">Serial:</span> <span id="int-serial" class="mono">--</span>
+          <div class="node-details" id="root-details">
+            <div class="detail-row"><span class="detail-label">Issuer:</span> <span id="root-detail-issuer" class="mono">--</span></div>
+            <div class="detail-row"><span class="detail-label">Valid From:</span> <span id="root-detail-from" class="mono">--</span></div>
+            <div class="detail-row"><span class="detail-label">Valid To:</span> <span id="root-detail-to" class="mono">--</span></div>
+            <div class="detail-row"><span class="detail-label">Fingerprint:</span> <span id="root-detail-fp" class="mono">--</span></div>
           </div>
         </div>
         <div class="chain-connector">
           <div class="connector-line"></div>
           <div class="connector-arrow">▼</div>
         </div>
-        <div class="chain-node leaf-node active-node" id="leaf-cert-card">
+        <div class="chain-node intermediate-node" id="int-ca-card" onclick="toggleDetails('int-details')">
+          <div class="node-badge">Intermediate CA</div>
+          <h3 id="int-cn">Loading Intermediate...</h3>
+          <div class="node-meta">
+            <span class="label">Serial:</span> <span id="int-serial" class="mono">--</span>
+          </div>
+          <div class="node-details" id="int-details">
+            <div class="detail-row"><span class="detail-label">Issuer:</span> <span id="int-detail-issuer" class="mono">--</span></div>
+            <div class="detail-row"><span class="detail-label">Valid From:</span> <span id="int-detail-from" class="mono">--</span></div>
+            <div class="detail-row"><span class="detail-label">Valid To:</span> <span id="int-detail-to" class="mono">--</span></div>
+            <div class="detail-row"><span class="detail-label">Fingerprint:</span> <span id="int-detail-fp" class="mono">--</span></div>
+          </div>
+        </div>
+        <div class="chain-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow">▼</div>
+        </div>
+        <div class="chain-node leaf-node active-node" id="leaf-cert-card" onclick="toggleDetails('leaf-details')">
           <div class="node-badge">Leaf Certificate</div>
           <h3 id="leaf-cn">test.example.com</h3>
           <div class="node-meta">
             <span class="label">Serial:</span> <span id="leaf-serial" class="mono">--</span>
             <span class="label">Issuer:</span> <span id="leaf-issuer">--</span>
+          </div>
+          <div class="node-details" id="leaf-details">
+            <div class="detail-row"><span class="detail-label">Valid From:</span> <span id="leaf-detail-from" class="mono">--</span></div>
+            <div class="detail-row"><span class="detail-label">Valid To:</span> <span id="leaf-detail-to" class="mono">--</span></div>
+            <div class="detail-row"><span class="detail-label">Fingerprint:</span> <span id="leaf-detail-fp" class="mono">--</span></div>
           </div>
         </div>
       </div>
@@ -97,6 +122,12 @@
           <span class="label">Valid To:</span>
           <span id="valid-to" class="value mono">--</span>
         </div>
+      </div>
+      <div class="action-area">
+        <button id="rotate-btn" class="rotate-button" onclick="triggerRotation()">
+          <span class="btn-spinner" id="btn-spinner"></span>
+          <span class="btn-text" id="btn-text">⚡ Force Instant Rotation</span>
+        </button>
       </div>
     </section>
 
