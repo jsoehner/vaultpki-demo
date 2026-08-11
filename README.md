@@ -59,6 +59,7 @@ For in-depth architectural choices, context, and consequences, consult our Archi
 - [ADR-003: TypeScript and Package Configuration](file://docs/decisions/0003-typescript-and-package-setup.md)
 - [ADR-004: Hamming Distance Python Utility](file://docs/decisions/0004-hamming-distance-python-utility.md)
 - [ADR-005: Interactive Certificate Rotation and Puppeteer UI Testing](file://docs/decisions/0005-interactive-rotation-and-puppeteer-testing.md)
+- [ADR-006: Post-Quantum Cryptography Migration to ML-DSA Certificates](file://docs/decisions/0006-post-quantum-mldsa-migration.md)
 
 ---
 

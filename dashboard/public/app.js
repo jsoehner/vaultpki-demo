@@ -89,6 +89,7 @@ function renderDashboard() {
     document.getElementById('root-serial').title = rootCA.serialNumber;
     
     document.getElementById('root-detail-issuer').textContent = rootCA.issuer;
+    document.getElementById('root-detail-algo').textContent = rootCA.algorithm || 'unknown';
     document.getElementById('root-detail-from').textContent = formatDate(rootCA.validFrom);
     document.getElementById('root-detail-to').textContent = formatDate(rootCA.validTo);
     document.getElementById('root-detail-fp').textContent = rootCA.fingerprint;
@@ -101,6 +102,7 @@ function renderDashboard() {
     document.getElementById('int-serial').title = intCA.serialNumber;
 
     document.getElementById('int-detail-issuer').textContent = intCA.issuer;
+    document.getElementById('int-detail-algo').textContent = intCA.algorithm || 'unknown';
     document.getElementById('int-detail-from').textContent = formatDate(intCA.validFrom);
     document.getElementById('int-detail-to').textContent = formatDate(intCA.validTo);
     document.getElementById('int-detail-fp').textContent = intCA.fingerprint;
@@ -116,6 +118,7 @@ function renderDashboard() {
     document.getElementById('valid-from').textContent = formatDate(leaf.validFrom);
     document.getElementById('valid-to').textContent = formatDate(leaf.validTo);
 
+    document.getElementById('leaf-detail-algo').textContent = leaf.algorithm || 'unknown';
     document.getElementById('leaf-detail-from').textContent = formatDate(leaf.validFrom);
     document.getElementById('leaf-detail-to').textContent = formatDate(leaf.validTo);
     document.getElementById('leaf-detail-fp').textContent = leaf.fingerprint;

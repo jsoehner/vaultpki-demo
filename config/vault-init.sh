@@ -53,14 +53,15 @@ else
     echo "Logging in..."
     vault login "$ROOT_TOKEN"
 
-    echo "Configuring PKI..."
+    echo "Configuring PKI with post-quantum ML-DSA-65 algorithms..."
     # Enable Root CA
     vault secrets enable -path=pki pki
     vault secrets tune -max-lease-ttl=87600h pki
+    # Note: ML-DSA-65 is the NIST post-quantum digital signature standard (FIPS 204)
     vault write pki/root/generate/internal \
       common_name="My Organization Root CA" \
       issuer_name="root-2026" \
-      ttl=87600h key_type=rsa key_bits=4096
+      ttl=87600h key_type=ml-dsa-65
     vault write pki/config/urls \
       issuing_certificates="http://vault:8200/v1/pki/ca" \
       crl_distribution_points="http://vault:8200/v1/pki/crl"
@@ -73,7 +74,7 @@ else
     vault write -field=csr pki_int/intermediate/generate/internal \
       common_name="My Organization Intermediate CA" \
       issuer_name="intermediate-2026" \
-      key_type=rsa key_bits=4096 > /tmp/intermediate.csr
+      key_type=ml-dsa-65 > /tmp/intermediate.csr
 
     # Sign Intermediate CA
     vault write -field=certificate pki/root/sign-intermediate \
@@ -93,7 +94,7 @@ else
     vault write pki_int/roles/web-server \
       allowed_domains="example.com" \
       allow_subdomains=true \
-      max_ttl=8760h key_type=rsa key_bits=2048 \
+      max_ttl=8760h key_type=ml-dsa-65 \
       require_cn=true allow_ip_sans=true \
       server_flag=true client_flag=false
 

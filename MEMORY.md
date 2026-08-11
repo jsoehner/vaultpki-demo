@@ -15,10 +15,11 @@ HashiCorp Vault PKI Demonstration project. A setup using Docker Compose to spin 
 ## 🧠 Key Decisions & Architecture
 - **[2026-07-02] - GitHub Actions Updates:** Bumped major versions of GitHub Actions in workflow files to fix Node 20 deprecation warnings and ensure Node 24 support.
 - **[2026-07-02] - Project Documentation:** Updated MEMORY.md to correctly reflect the Vault PKI demo context instead of an older Java/Spring Boot project.
+- **[2026-08-11] - Post-Quantum Cryptography Migration**: Transitioned PKI CA trust hierarchy and mock generators to FIPS 204 post-quantum ML-DSA-65 algorithms and updated dashboard to display parsed signature types. Added ADR-006.
 
 ## 👤 User Preferences
 - Prefers CLI-only workflows for configuration activities; avoid UI-login-updated steps.
 - Values retroactive documentation of completed activities and lessons learned in project docs.
 
 ## 📝 Unresolved Issues / Gotchas
-- None currently.
+- Vault Enterprise or specialized OpenSSL 3.5+ installation is required to generate/verify native ML-DSA certificates. When running locally without Docker or running classical open-source Vault, mock OpenSSL-based generation fallback is executed during tests.

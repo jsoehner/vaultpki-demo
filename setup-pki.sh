@@ -44,10 +44,11 @@ echo "Running PKI setup based on the guide..."
 # Enable Root CA
 docker exec vault-pki-demo vault secrets enable -path=pki pki
 docker exec vault-pki-demo vault secrets tune -max-lease-ttl=87600h pki
+# Note: ML-DSA-65 is the NIST post-quantum digital signature standard (FIPS 204)
 docker exec vault-pki-demo vault write pki/root/generate/internal \
   common_name="My Organization Root CA" \
   issuer_name="root-2026" \
-  ttl=87600h key_type=rsa key_bits=4096
+  ttl=87600h key_type=ml-dsa-65
 docker exec vault-pki-demo vault write pki/config/urls \
   issuing_certificates="http://127.0.0.1:8200/v1/pki/ca" \
   crl_distribution_points="http://127.0.0.1:8200/v1/pki/crl"
@@ -59,7 +60,7 @@ docker exec vault-pki-demo vault secrets tune -max-lease-ttl=43800h pki_int
 docker exec vault-pki-demo vault write -format=json pki_int/intermediate/generate/internal \
   common_name="My Organization Intermediate CA" \
   issuer_name="intermediate-2026" \
-  key_type=rsa key_bits=4096 | jq -r ".data.csr" > intermediate.csr
+  key_type=ml-dsa-65 | jq -r ".data.csr" > intermediate.csr
 
 docker cp intermediate.csr vault-pki-demo:/tmp/intermediate.csr
 
@@ -82,7 +83,7 @@ docker exec vault-pki-demo vault write pki_int/config/urls \
 docker exec vault-pki-demo vault write pki_int/roles/web-server \
   allowed_domains="example.com" \
   allow_subdomains=true \
-  max_ttl=8760h key_type=rsa key_bits=2048 \
+  max_ttl=8760h key_type=ml-dsa-65 \
   require_cn=true allow_ip_sans=true \
   server_flag=true client_flag=false
 
