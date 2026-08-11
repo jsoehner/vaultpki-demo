@@ -15,8 +15,15 @@ STATUS=$(docker exec vault-pki-demo vault status -format=json 2>/dev/null || tru
 if echo "$STATUS" | grep -q '"initialized": true'; then
     echo "Vault is already initialized."
     
+    KEYS_FILE=""
     if [ -f "vault-keys.txt" ]; then
-        source vault-keys.txt
+        KEYS_FILE="vault-keys.txt"
+    elif [ -f "config/vault-keys.txt" ]; then
+        KEYS_FILE="config/vault-keys.txt"
+    fi
+
+    if [ -n "$KEYS_FILE" ]; then
+        source "$KEYS_FILE"
         echo "Unsealing..."
         docker exec vault-pki-demo vault operator unseal "$UNSEAL_KEY" || true
     else
@@ -30,8 +37,8 @@ INIT_JSON=$(docker exec vault-pki-demo vault operator init -key-shares=1 -key-th
 UNSEAL_KEY=$(echo "$INIT_JSON" | jq -r .unseal_keys_b64[0])
 ROOT_TOKEN=$(echo "$INIT_JSON" | jq -r .root_token)
 
-echo "UNSEAL_KEY=$UNSEAL_KEY" > vault-keys.txt
-echo "ROOT_TOKEN=$ROOT_TOKEN" >> vault-keys.txt
+echo "UNSEAL_KEY=$UNSEAL_KEY" > config/vault-keys.txt
+echo "ROOT_TOKEN=$ROOT_TOKEN" >> config/vault-keys.txt
 
 echo "Unsealing Vault..."
 docker exec vault-pki-demo vault operator unseal "$UNSEAL_KEY"
@@ -39,28 +46,50 @@ docker exec vault-pki-demo vault operator unseal "$UNSEAL_KEY"
 echo "Logging in..."
 docker exec vault-pki-demo vault login "$ROOT_TOKEN"
 
-echo "Running PKI setup based on the guide..."
+echo "Running PKI setup..."
 
 # Enable Root CA
-docker exec vault-pki-demo vault secrets enable -path=pki pki
-docker exec vault-pki-demo vault secrets tune -max-lease-ttl=87600h pki
-# Note: ML-DSA-65 is the NIST post-quantum digital signature standard (FIPS 204)
-docker exec vault-pki-demo vault write pki/root/generate/internal \
+docker exec vault-pki-demo vault secrets enable -path=pki pki || true
+docker exec vault-pki-demo vault secrets tune -max-lease-ttl=87600h pki || true
+
+# Try ML-DSA-65, fallback to RSA if unsupported
+USING_FALLBACK=false
+if ! docker exec vault-pki-demo vault write pki/root/generate/internal \
   common_name="My Organization Root CA" \
   issuer_name="root-2026" \
-  ttl=87600h key_type=ml-dsa-65
+  ttl=87600h key_type=ml-dsa-65 2>/tmp/setup-root-err.log; then
+    if grep -q "unsupported" /tmp/setup-root-err.log || grep -q "invalid" /tmp/setup-root-err.log || grep -q "Error" /tmp/setup-root-err.log; then
+        echo "ML-DSA-65 key type is not supported by this Vault instance. Falling back to RSA 4096..."
+        docker exec vault-pki-demo vault write pki/root/generate/internal \
+          common_name="My Organization Root CA" \
+          issuer_name="root-2026" \
+          ttl=87600h key_type=rsa key_bits=4096
+        USING_FALLBACK=true
+    else
+        cat /tmp/setup-root-err.log
+        exit 1
+    fi
+fi
+
 docker exec vault-pki-demo vault write pki/config/urls \
   issuing_certificates="http://127.0.0.1:8200/v1/pki/ca" \
   crl_distribution_points="http://127.0.0.1:8200/v1/pki/crl"
 
 # Enable Intermediate CA
 docker exec vault-pki-demo vault secrets enable -path=pki_int pki || true
-docker exec vault-pki-demo vault secrets tune -max-lease-ttl=43800h pki_int
+docker exec vault-pki-demo vault secrets tune -max-lease-ttl=43800h pki_int || true
 
-docker exec vault-pki-demo vault write -format=json pki_int/intermediate/generate/internal \
-  common_name="My Organization Intermediate CA" \
-  issuer_name="intermediate-2026" \
-  key_type=ml-dsa-65 | jq -r ".data.csr" > intermediate.csr
+if [ "$USING_FALLBACK" = "true" ]; then
+    docker exec vault-pki-demo vault write -format=json pki_int/intermediate/generate/internal \
+      common_name="My Organization Intermediate CA" \
+      issuer_name="intermediate-2026" \
+      key_type=rsa key_bits=4096 | jq -r ".data.csr" > intermediate.csr
+else
+    docker exec vault-pki-demo vault write -format=json pki_int/intermediate/generate/internal \
+      common_name="My Organization Intermediate CA" \
+      issuer_name="intermediate-2026" \
+      key_type=ml-dsa-65 | jq -r ".data.csr" > intermediate.csr
+fi
 
 docker cp intermediate.csr vault-pki-demo:/tmp/intermediate.csr
 
@@ -80,12 +109,21 @@ docker exec vault-pki-demo vault write pki_int/config/urls \
   ocsp_servers="http://127.0.0.1:8200/v1/pki_int/ocsp"
 
 # Create a sample role
-docker exec vault-pki-demo vault write pki_int/roles/web-server \
-  allowed_domains="example.com" \
-  allow_subdomains=true \
-  max_ttl=8760h key_type=ml-dsa-65 \
-  require_cn=true allow_ip_sans=true \
-  server_flag=true client_flag=false
+if [ "$USING_FALLBACK" = "true" ]; then
+    docker exec vault-pki-demo vault write pki_int/roles/web-server \
+      allowed_domains="example.com" \
+      allow_subdomains=true \
+      max_ttl=8760h key_type=rsa key_bits=2048 \
+      require_cn=true allow_ip_sans=true \
+      server_flag=true client_flag=false
+else
+    docker exec vault-pki-demo vault write pki_int/roles/web-server \
+      allowed_domains="example.com" \
+      allow_subdomains=true \
+      max_ttl=8760h key_type=ml-dsa-65 \
+      require_cn=true allow_ip_sans=true \
+      server_flag=true client_flag=false
+fi
 
 echo "Configuring AppRole for Vault Agent..."
 docker exec vault-pki-demo vault auth enable approle || true

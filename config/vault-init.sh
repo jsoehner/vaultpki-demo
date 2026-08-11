@@ -53,28 +53,49 @@ else
     echo "Logging in..."
     vault login "$ROOT_TOKEN"
 
-    echo "Configuring PKI with post-quantum ML-DSA-65 algorithms..."
+    echo "Configuring PKI..."
     # Enable Root CA
-    vault secrets enable -path=pki pki
-    vault secrets tune -max-lease-ttl=87600h pki
-    # Note: ML-DSA-65 is the NIST post-quantum digital signature standard (FIPS 204)
-    vault write pki/root/generate/internal \
+    vault secrets enable -path=pki pki || true
+    vault secrets tune -max-lease-ttl=87600h pki || true
+    
+    # Try generating ML-DSA-65 Root CA, fall back to RSA 4096 if unsupported
+    if ! vault write pki/root/generate/internal \
       common_name="My Organization Root CA" \
       issuer_name="root-2026" \
-      ttl=87600h key_type=ml-dsa-65
+      ttl=87600h key_type=ml-dsa-65 2>/tmp/vault-root-err.log; then
+        if grep -q "unsupported" /tmp/vault-root-err.log || grep -q "invalid" /tmp/vault-root-err.log || grep -q "Error" /tmp/vault-root-err.log; then
+            echo "ML-DSA-65 key type is not supported by this Vault instance. Falling back to RSA 4096..."
+            vault write pki/root/generate/internal \
+              common_name="My Organization Root CA" \
+              issuer_name="root-2026" \
+              ttl=87600h key_type=rsa key_bits=4096
+            USING_FALLBACK=true
+        else
+            cat /tmp/vault-root-err.log
+            exit 1
+        fi
+    fi
+
     vault write pki/config/urls \
       issuing_certificates="http://vault:8200/v1/pki/ca" \
       crl_distribution_points="http://vault:8200/v1/pki/crl"
 
     # Enable Intermediate CA
     vault secrets enable -path=pki_int pki || true
-    vault secrets tune -max-lease-ttl=43800h pki_int
+    vault secrets tune -max-lease-ttl=43800h pki_int || true
 
-    # Generate CSR
-    vault write -field=csr pki_int/intermediate/generate/internal \
-      common_name="My Organization Intermediate CA" \
-      issuer_name="intermediate-2026" \
-      key_type=ml-dsa-65 > /tmp/intermediate.csr
+    # Generate CSR (using ML-DSA-65 or RSA depending on fallback)
+    if [ "$USING_FALLBACK" = "true" ]; then
+        vault write -field=csr pki_int/intermediate/generate/internal \
+          common_name="My Organization Intermediate CA" \
+          issuer_name="intermediate-2026" \
+          key_type=rsa key_bits=4096 > /tmp/intermediate.csr
+    else
+        vault write -field=csr pki_int/intermediate/generate/internal \
+          common_name="My Organization Intermediate CA" \
+          issuer_name="intermediate-2026" \
+          key_type=ml-dsa-65 > /tmp/intermediate.csr
+    fi
 
     # Sign Intermediate CA
     vault write -field=certificate pki/root/sign-intermediate \
@@ -91,12 +112,21 @@ else
       ocsp_servers="http://vault:8200/v1/pki_int/ocsp"
 
     # Create role
-    vault write pki_int/roles/web-server \
-      allowed_domains="example.com" \
-      allow_subdomains=true \
-      max_ttl=8760h key_type=ml-dsa-65 \
-      require_cn=true allow_ip_sans=true \
-      server_flag=true client_flag=false
+    if [ "$USING_FALLBACK" = "true" ]; then
+        vault write pki_int/roles/web-server \
+          allowed_domains="example.com" \
+          allow_subdomains=true \
+          max_ttl=8760h key_type=rsa key_bits=2048 \
+          require_cn=true allow_ip_sans=true \
+          server_flag=true client_flag=false
+    else
+        vault write pki_int/roles/web-server \
+          allowed_domains="example.com" \
+          allow_subdomains=true \
+          max_ttl=8760h key_type=ml-dsa-65 \
+          require_cn=true allow_ip_sans=true \
+          server_flag=true client_flag=false
+    fi
 
     echo "Configuring AppRole for Vault Agent..."
     vault auth enable approle || true

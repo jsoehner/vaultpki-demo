@@ -6,19 +6,16 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 
 ## Quick Start
 
-1. **Spin up the stack**:
+1. **Run the orchestrator**:
    ```bash
-   docker-compose up -d
+   ./run_demo.sh
    ```
-   This starts the Vault server, NGINX web server, the automated Vault initialization agent, and the live dashboard.
+   This stops any existing stack, starts the services, automatically initializes/unseals Vault (with a graceful fallback to RSA if post-quantum ML-DSA-65 keys are unsupported), and waits for the PKI trust chain setup to complete.
 
-2. **Wait for automated initialization**:
-   The `vault-init` container will automatically run the setup, unseal Vault, configure the PKI engines, generate CA certs, configure AppRoles, and write authorization keys.
-
-3. **Check the Live Dashboard**:
+2. **Check the Live Dashboard**:
    Open [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the live trust chain and real-time rotation monitoring.
 
-4. **Watch rotation via CLI**:
+3. **Watch rotation via CLI**:
    ```bash
    ./watch-rotation.sh
    ```
@@ -29,6 +26,7 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 
 | Command / Run Tool | Scope | Description |
 |--------------------|-------|-------------|
+| `./run_demo.sh` | Orchestration | Starts the stack, initializes Vault with fallback support, and prints health status |
 | `docker-compose up -d` | Docker Stack | Starts all services (Vault, NGINX, Vault Agent, Vault Init, Dashboard) |
 | `docker-compose down` | Docker Stack | Stops and cleans up all active container resources |
 | `./setup-pki.sh` | Shell Script | Manual wrapper for PKI configuration (fallback/alternative to `vault-init`) |
@@ -60,6 +58,7 @@ For in-depth architectural choices, context, and consequences, consult our Archi
 - [ADR-004: Hamming Distance Python Utility](file://docs/decisions/0004-hamming-distance-python-utility.md)
 - [ADR-005: Interactive Certificate Rotation and Puppeteer UI Testing](file://docs/decisions/0005-interactive-rotation-and-puppeteer-testing.md)
 - [ADR-006: Post-Quantum Cryptography Migration to ML-DSA Certificates](file://docs/decisions/0006-post-quantum-mldsa-migration.md)
+- [ADR-007: Graceful PQC Fallback and Unified Orchestration](file://docs/decisions/0007-graceful-pqc-fallback-and-orchestration.md)
 
 ---
 
