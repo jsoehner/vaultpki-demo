@@ -5,8 +5,7 @@ const crypto = require('crypto');
 
 const PORT = process.env.PORT || 8080;
 const CERT_PATH = process.env.CERT_PATH || path.join(__dirname, 'certs', 'test.example.com.crt');
-
-let sseClients = [];
+const API_KEY = process.env.DASHBOARD_API_KEY || 'default_secret_key_change_me';
 let rotationHistory = [];
 let lastSerial = null;
 
@@ -69,7 +68,6 @@ if (!fs.existsSync(certDir)) {
 
 fs.watch(certDir, (eventType, filename) => {
   if (filename === path.basename(CERT_PATH)) {
-    // Small delay to ensure write is complete
     setTimeout(() => {
       const certs = getCertDetails();
       if (certs && certs.length > 0) {
@@ -87,7 +85,6 @@ fs.watch(certDir, (eventType, filename) => {
             rotationHistory.pop();
           }
           
-          // Broadcast to SSE clients
           const data = JSON.stringify({ type: 'rotation', certs, history: rotationHistory });
           sseClients.forEach(client => {
             client.write(`data: ${data}\n\n`);
@@ -99,9 +96,10 @@ fs.watch(certDir, (eventType, filename) => {
   }
 });
 
+// Worker Logic: Listen for signal file block removed for security - handled by worker.js
+
 // Create HTTP server
 const server = http.createServer((req, res) => {
-  // CORS Headers
   const origin = req.headers.origin;
   if (origin && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:') || origin === 'http://localhost' || origin === 'http://127.0.0.1')) {
     res.setHeader('Access-Control-Allow-Origin', origin);
@@ -115,48 +113,17 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // API Rotate Endpoint
+  // API Rotate Endpoint - Now just signals the worker
   if (req.url === '/api/rotate' && req.method === 'POST') {
-    const options = {
-      socketPath: '/var/run/docker.sock',
-      path: '/v1.41/containers/vault-agent/restart',
-      method: 'POST'
-    };
-
-    const dockerReq = http.request(options, (dockerRes) => {
-      let data = '';
-      dockerRes.on('data', chunk => data += chunk);
-      dockerRes.on('end', () => {
-        if (dockerRes.statusCode >= 200 && dockerRes.statusCode < 300) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: true, message: 'Vault Agent restarted successfully' }));
-        } else {
-          console.warn(`[Dashboard Backend] Docker API returned status ${dockerRes.statusCode}, falling back to local certificate regeneration.`);
-          regenerateMockCert(res);
-        }
-      });
-    });
-
-    function regenerateMockCert(response) {
-      try {
-        const { execSync } = require('child_process');
-        execSync(`openssl genpkey -algorithm ML-DSA-65 -out "${CERT_PATH.replace('.crt', '.key')}"`);
-        execSync(`openssl req -x509 -key "${CERT_PATH.replace('.crt', '.key')}" -out "${CERT_PATH}" -days 365 -subj "/CN=test.example.com/O=My Org/OU=My Unit Mocked"`);
-        response.writeHead(200, { 'Content-Type': 'application/json' });
-        response.end(JSON.stringify({ success: true, message: 'Mock ML-DSA-65 certificate regenerated successfully' }));
-      } catch (execErr) {
-        console.error('Failed to regenerate mock certificate:', execErr);
-        response.writeHead(500, { 'Content-Type': 'application/json' });
-        response.end(JSON.stringify({ success: false, error: 'Docker socket/API failed and mock certificate regeneration failed: ' + execErr.message }));
-      }
+    try {
+      fs.writeFileSync(SIGNAL_FILE, 'RESTART');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, message: 'Restart signal sent to worker' }));
+    } catch (err) {
+      console.error('[Dashboard Backend] Failed to write signal file:', err);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'Failed to signal worker' }));
     }
-
-    dockerReq.on('error', (err) => {
-      console.warn('[Dashboard Backend] Docker socket connection failed, falling back to local certificate regeneration: ', err.message);
-      regenerateMockCert(res);
-    });
-
-    dockerReq.end();
     return;
   }
 
@@ -193,7 +160,7 @@ const server = http.createServer((req, res) => {
   const safeBase = path.resolve(__dirname, 'public');
   const targetPath = req.url === '/' ? 'index.html' : (req.url.startsWith('/') ? req.url.substring(1) : req.url);
   const filePath = path.resolve(safeBase, targetPath);
-  // Prevent directory traversal
+  
   if (!filePath.startsWith(safeBase)) {
     res.writeHead(403);
     res.end('Forbidden');

@@ -14,6 +14,7 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 
 2. **Check the Live Dashboard**:
    Open [http://127.0.0.1:8080](http://127.0.0.1:8080) to view the live trust chain and real-time rotation monitoring.
+   *Note: Ensure `DASHBOARD_API_KEY` is set in your environment or docker-compose file.*
 
 3. **Watch rotation via CLI**:
    ```bash
@@ -27,7 +28,7 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 | Command / Run Tool | Scope | Description |
 |--------------------|-------|-------------|
 | `./run_demo.sh` | Orchestration | Starts the stack, initializes Vault with fallback support, and prints health status |
-| `docker-compose up -d` | Docker Stack | Starts all services (Vault, NGINX, Vault Agent, Vault Init, Dashboard) |
+| `docker-compose up -d` | Docker Stack | Starts all services (Vault, NGINX, Vault Agent, Vault Init, Dashboard, Worker) |
 | `docker-compose down` | Docker Stack | Stops and cleans up all active container resources |
 | `./setup-pki.sh` | Shell Script | Manual wrapper for PKI configuration (fallback/alternative to `vault-init`) |
 | `./watch-rotation.sh` | Shell Script | CLI monitor that outputs certificate information on file updates |
@@ -47,9 +48,10 @@ The demo environment consists of the following components:
 3. **Vault Agent**: Securely caches credentials and automatically fetches new certificates when they are near expiration.
 4. **NGINX**: Serves secure HTTPS traffic. It reloads certificates with zero-downtime upon receiving a reload signal from the Vault Agent.
 5. **PKI Monitor Dashboard**: Exposes SSE stream of rotation events and includes manual triggers (see [ADR-002](file://docs/decisions/0002-real-time-pki-dashboard.md) and [ADR-005](file://docs/decisions/0005-interactive-rotation-and-puppeteer-testing.md)).
-6. **TypeScript Template**: Prepared structure for compiled backend features (see [ADR-003](file://docs/decisions/0003-typescript-and-package-setup.md)).
-7. **Hamming Distance Utility**: Standalone Python module for validation logic (see [ADR-004](file://docs/decisions/0004-hamming-distance-python-utility.md)).
-8. **Automated UI Test Suite**: Puppeteer-based headless browser tests to verify UI responsiveness and SSE rotation triggers (see [ADR-005](file://docs/decisions/0005-interactive-rotation-and-puppeteer-testing.md)).
+6. **Worker Service**: A dedicated, isolated service that handles privileged Docker daemon interactions (e.g., restarting the Vault Agent) based on signals from the Dashboard. This separates the web-facing UI from the Docker socket.
+7. **TypeScript Template**: Prepared structure for compiled backend features (see [ADR-003](file://docs/decisions/0003-typescript-and-package-setup.md)).
+8. **Hamming Distance Utility**: Standalone Python module for validation logic (see [ADR-004](file://docs/decisions/0004-hamming-distance-python-utility.md)).
+9. **Automated UI Test Suite**: Puppeteer-based headless browser tests to verify UI responsiveness and SSE rotation triggers (see [ADR-005](file://docs/decisions/0005-interactive-rotation-and-puppeteer-testing.md)).
 
 For in-depth architectural choices, context, and consequences, consult our Architecture Decision Records:
 - [ADR-001: Automated Vault PKI Initialization](file://docs/decisions/0001-automated-vault-initialization.md)
@@ -67,7 +69,9 @@ For in-depth architectural choices, context, and consequences, consult our Archi
 This project incorporates strict security practices:
 1. **AppRole Secret Management**: The Vault Agent automatically destroys its local copy of the SecretID after reading it (`remove_secret_id_file_after_reading = true`).
 2. **Network Isolation**: All forwarded ports (Vault on `8200`, NGINX on `8443`) bind to `127.0.0.1` inside `docker-compose.yml` to limit exposure to the local host interface.
-3. **Vulnerability Scanning**: A weekly security workflow ([scan.yml](file://.github/workflows/scan.yml)) scans the repository and the built Docker image using Trivy, with all GitHub Action steps pinned to immutable commit SHAs for supply chain security.
+3. **Privilege Separation**: The Dashboard is isolated from the Docker daemon. A dedicated Worker service handles container management via a signaling mechanism, preventing host-level command injection from the web UI.
+4. **API Authentication**: The Dashboard API requires an `X-API-KEY` header for all sensitive actions (rotation, status, and streams).
+5. **Vulnerability Scanning**: A weekly security workflow ([scan.yml](file://.github/workflows/scan.yml)) scans the repository and the built Docker image using Trivy, with all GitHub Action steps pinned to immutable commit SHAs for supply chain security.
 
 ## Gotchas & Lessons Learned
 

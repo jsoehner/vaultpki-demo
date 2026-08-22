@@ -65,10 +65,23 @@ services:
     volumes:
       - ./certs:/usr/src/app/certs
       - ./dashboard:/usr/src/app
-      - /var/run/docker.sock:/var/run/docker.sock
     environment:
       - PORT=8080
       - CERT_PATH=/usr/src/app/certs/test.example.com.crt
     working_dir: /usr/src/app
     command: node server.js
 
+  worker:
+    image: node:alpine
+    container_name: vault-pki-worker
+    volumes:
+      - ./certs:/usr/src/app/certs
+      - ./dashboard:/usr/src/app
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - PORT=8080
+      - CERT_PATH=/usr/src/app/certs/test.example.com.crt
+    working_dir: /usr/src/app
+    command: node worker.js
+    depends_on:
+      - dashboard

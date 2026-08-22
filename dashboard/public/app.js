@@ -55,7 +55,12 @@ async function triggerRotation() {
   text.textContent = ' Rotating...';
 
   try {
-    const res = await fetch('/api/rotate', { method: 'POST' });
+    const res = await fetch('/api/rotate', { 
+      method: 'POST',
+      headers: {
+        'X-API-KEY': 'default_secret_key_change_me'
+      }
+    });
     const data = await res.json();
     if (!data.success) {
       console.error('Rotation trigger failed:', data.error);
@@ -100,7 +105,7 @@ function renderDashboard() {
     document.getElementById('int-cn').textContent = intCA.subject.replace('CN=', '');
     document.getElementById('int-serial').textContent = formatSerial(intCA.serialNumber);
     document.getElementById('int-serial').title = intCA.serialNumber;
-
+    
     document.getElementById('int-detail-issuer').textContent = intCA.issuer;
     document.getElementById('int-detail-algo').textContent = intCA.algorithm || 'unknown';
     document.getElementById('int-detail-from').textContent = formatDate(intCA.validFrom);
@@ -117,12 +122,12 @@ function renderDashboard() {
     
     document.getElementById('valid-from').textContent = formatDate(leaf.validFrom);
     document.getElementById('valid-to').textContent = formatDate(leaf.validTo);
-
+    
     document.getElementById('leaf-detail-algo').textContent = leaf.algorithm || 'unknown';
     document.getElementById('leaf-detail-from').textContent = formatDate(leaf.validFrom);
     document.getElementById('leaf-detail-to').textContent = formatDate(leaf.validTo);
     document.getElementById('leaf-detail-fp').textContent = leaf.fingerprint;
-
+    
     // Update Expiration Target
     expirationTime = new Date(leaf.validTo).getTime();
     startCountdown();
@@ -217,7 +222,7 @@ function connectSSE() {
         rotationHistory = data.history;
         renderDashboard();
         showToast();
-
+        
         // Visual feedback on rotate button loading reset
         const btn = document.getElementById('rotate-btn');
         const spinner = document.getElementById('btn-spinner');

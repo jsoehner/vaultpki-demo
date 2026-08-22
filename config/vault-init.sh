@@ -15,24 +15,23 @@ if vault status -format=json | grep -q '"initialized": true'; then
     # Check if sealed
     if vault status -format=json | grep -q '"sealed": true'; then
         echo "Vault is sealed. Attempting to unseal..."
-        KEYS_FILE=""
-        if [ -f "/vault/config/vault-keys.txt" ]; then
-            KEYS_FILE="/vault/config/vault-keys.txt"
-        elif [ -f "/vault/vault-keys.txt" ]; then
-            KEYS_FILE="/vault/vault-keys.txt"
+        
+        # Priority 1: Environment Variable
+        # Priority 2: File fallback
+        UNSEAL_KEY=${UNSEAL_KEY:-""}
+        if [ -z "$UNSEAL_KEY" ]; then
+            if [ -f "/vault/config/vault-keys.txt" ]; then
+                UNSEAL_KEY=$(grep "UNSEAL_KEY=" /vault/config/vault-keys.txt | cut -d'=' -f2- | tr -d '\r')
+            elif [ -f "/vault/vault-keys.txt" ]; then
+                UNSEAL_KEY=$(grep "UNSEAL_KEY=" /vault/vault-keys.txt | cut -d'=' -f2- | tr -d '\r')
+            fi
         fi
 
-        if [ -n "$KEYS_FILE" ]; then
-            UNSEAL_KEY=$(grep "UNSEAL_KEY=" "$KEYS_FILE" | cut -d'=' -f2- | tr -d '\r')
-            if [ -n "$UNSEAL_KEY" ]; then
-                vault operator unseal "$UNSEAL_KEY"
-                echo "Vault unsealed successfully."
-            else
-                echo "Error: UNSEAL_KEY not found in $KEYS_FILE"
-                exit 1
-            fi
+        if [ -n "$UNSEAL_KEY" ]; then
+            vault operator unseal "$UNSEAL_KEY"
+            echo "Vault unsealed successfully."
         else
-            echo "Error: vault-keys.txt not found. Cannot unseal."
+            echo "Error: UNSEAL_KEY not found in environment or files."
             exit 1
         fi
     else
@@ -44,6 +43,13 @@ else
     UNSEAL_KEY=$(echo "$INIT_OUT" | grep "Unseal Key 1:" | awk '{print $NF}')
     ROOT_TOKEN=$(echo "$INIT_OUT" | grep "Initial Root Token:" | awk '{print $NF}')
 
+    # Log to stdout/stderr for user to capture, but we'll still write to a temp file for the script's logic
+    echo "--- VAULT INITIALIZATION DATA ---" 
+    echo "UNSEAL_KEY=$UNSEAL_KEY" 
+    echo "ROOT_TOKEN=$ROOT_TOKEN" 
+    echo "--------------------------------" 
+
+    # Write to local file for script persistence (should be cleaned up or handled by the user)
     echo "UNSEAL_KEY=$UNSEAL_KEY" > /vault/config/vault-keys.txt
     echo "ROOT_TOKEN=$ROOT_TOKEN" >> /vault/config/vault-keys.txt
 

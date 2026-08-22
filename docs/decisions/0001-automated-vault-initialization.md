@@ -7,7 +7,7 @@ Accepted
 2026-07-11
 
 ## Context
-Setting up a secure PKI structure using HashiCorp Vault normally requires multiple sequential manual CLI operations (initializing the operator, unsealing, enabling PKI secrets engines, generating root/intermediate CAs, configuring roles, policies, and AppRoles). While a shell script (`setup-pki.sh`) exists, running it manually is error-prone, hard to coordinate in CI/CD or container environments, and doesn't run automatically when spinning up the environment via `docker-compose`.
+Setting up a secure PKI structure using HashiCorp Vault normally requires multiple sequential manual CLI operations (initializing the operator, unsealing, enabling PKI secrets engines, generating root/intermediate CAs, configuring roles, policies, and AppRoles). While a shell script (`setup-pki.sh`) exists, running it manually is error-prone, hard to coordinate in CI/CD or container environments, and doesn't run automatically when spinning up the environment via `docker-compose up`.
 
 ## Decision
 Introduce a dedicated `vault-init` container service in `docker-compose.yml` running a helper script `config/vault-init.sh`. 
@@ -18,6 +18,10 @@ This container:
 3. If not initialized, performs the operator init, stores the root token and unseal key under a shared volume, and unseals Vault.
 4. Dynamically mounts and configures the Root CA, Intermediate CA, Certificate Roles, and AppRole credentials, writing the generated RoleID and SecretID to a shared agent directory.
 5. Exit upon completion, letting the `vault-agent` start automatically afterwards.
+
+## Security Improvements
+- **Environment Variable Support**: The script now prioritizes `UNSEAL_KEY` from environment variables, allowing for more secure injection in CI/CD or production environments.
+- **Persistence Logic**: While it still supports local file fallbacks for demo ease, the script is structured to make it easy to swap to a fully environment-driven flow.
 
 ## Alternatives Considered
 ### Manual Setup via setup-pki.sh
