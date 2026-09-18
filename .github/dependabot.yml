@@ -5,11 +5,15 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 1
+    assignees:
+      - "jsoehner"
 
   # Check for updates to Docker images in Dockerfile and docker-compose.yml
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 1
+    assignees:
+      - "jsoehner"
