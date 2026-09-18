@@ -3,12 +3,12 @@
 
 ## Type of Change
 <!-- Please select one or more: -->
-- [ ] Bug Fix
-- [ ] New Feature
-- [ ] Documentation Update
-- [ ] Refactor
-- [ ] Security Fix
-- [ ] Test Improvement
+- [ ] 🐛 Bug Fix
+- [ ] ✨ New Feature
+- [ ] 📝 Documentation Update
+- [ ] ♻️ Refactor
+- [ ] 🛡️ Security Fix
+- [ ] 🧪 Test Improvement
 
 ## Description
 <!-- Describe the problem you are solving and the approach you took. -->
