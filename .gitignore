@@ -14,3 +14,6 @@ agent/
 .dockerenv
 .git
 .gitignore
+
+# Generated BOM artifacts
+oss/
