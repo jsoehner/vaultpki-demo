@@ -9,6 +9,9 @@ certs/
 data/
 agent/
 .env
+*.pem
+*.csr
+*keys.txt
 
 # Docker and environment
 .dockerenv
