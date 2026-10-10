@@ -38,8 +38,20 @@ jobs:
       - name: Install cdxgen
         run: npm install -g @cyclonedx/cdxgen
 
-      - name: Generate CBOM from Container Image
-        run: cdxgen -t docker --include-crypto -o oss/cbom.json my-demo-app:local
+      - name: Generate CBOM with cbomkit
+        uses: cbomkit/cbomkit-action@34a3d967e27a53a083a4c6e0a7735606794ca146 # v2
+        with:
+          image-ref: 'my-demo-app:local'
+          output-dir: oss
+
+      - name: Run Trivy vulnerability scanner on Docker image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'my-demo-app:local'
+          format: 'table'
+          exit-code: '1' # Fail workflow if vulnerabilities are found
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
 
       - name: Upload BOM Artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.3.3
