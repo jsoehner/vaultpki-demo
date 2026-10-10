@@ -89,3 +89,7 @@ If you pin the `aquasecurity/trivy-action` to a specific version (e.g., `v0.28.0
 
 ### Docker Build Context Permissions
 If your CI workflow (or a local build) runs `docker build .` in the same directory where Vault is running, Docker will attempt to copy the `data/` directory (including `data/raft`) into the build context. Because this folder is owned by root, Docker will throw a `permission denied` error. Always use a `.dockerignore` file to exclude sensitive/system directories (like `.git`, `data`, `certs`, `agent`) from your build context.
+
+
+## 🛡️ Security & Cryptographic Posture
+This project tracks Software & Cryptographic Bill of Materials (SBOM & CBOM) and Post-Quantum Cryptography (PQC) readiness. See the latest [Cryptographic Audit & PQC Migration Report](docs/security/CRYPTOGRAPHIC_AUDIT.md).
