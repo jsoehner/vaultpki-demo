@@ -9,8 +9,14 @@ certs/
 data/
 agent/
 .env
+*.pem
+*.csr
+*keys.txt
 
 # Docker and environment
 .dockerenv
 .git
 .gitignore
+
+# Generated BOM artifacts
+oss/
