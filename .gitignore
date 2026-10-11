@@ -12,11 +12,12 @@ agent/
 *.pem
 *.csr
 *keys.txt
+config/vault-keys.txt
 
 # Docker and environment
 .dockerenv
 .git
 .gitignore
 
-# Generated BOM artifacts
+# SBOM & CBOM artifacts
 oss/

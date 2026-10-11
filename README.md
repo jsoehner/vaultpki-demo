@@ -37,6 +37,8 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 | `npm run dashboard` | Local Node.js | Launches the monitoring dashboard backend server locally |
 | `npm test` | Local Node.js | Runs the automated Puppeteer browser integration test |
 | `python3 hamming_distance.py` | Python Script | Runs local test cases for the Hamming distance utility |
+| `bash scripts/generate_boms.sh` | Shell Script | Generates local CycloneDX/SPDX SBOMs and cbomkit CBOM |
+| `bash scripts/test_boms.sh oss` | Shell Script | Verifies SBOM and CBOM schema compliance and test harness |
 
 ---
 
@@ -61,6 +63,7 @@ For in-depth architectural choices, context, and consequences, consult our Archi
 - [ADR-005: Interactive Certificate Rotation and Puppeteer UI Testing](file://docs/decisions/0005-interactive-rotation-and-puppeteer-testing.md)
 - [ADR-006: Post-Quantum Cryptography Migration to ML-DSA Certificates](file://docs/decisions/0006-post-quantum-mldsa-migration.md)
 - [ADR-007: Graceful PQC Fallback and Unified Orchestration](file://docs/decisions/0007-graceful-pqc-fallback-and-orchestration.md)
+- [ADR-008: Automated SBOM and CBOM Supply Chain Governance](file://docs/decisions/0008-automated-sbom-cbom-supply-chain-governance.md)
 
 ---
 
@@ -90,6 +93,51 @@ If you pin the `aquasecurity/trivy-action` to a specific version (e.g., `v0.28.0
 ### Docker Build Context Permissions
 If your CI workflow (or a local build) runs `docker build .` in the same directory where Vault is running, Docker will attempt to copy the `data/` directory (including `data/raft`) into the build context. Because this folder is owned by root, Docker will throw a `permission denied` error. Always use a `.dockerignore` file to exclude sensitive/system directories (like `.git`, `data`, `certs`, `agent`) from your build context.
 
+---
 
-## 🛡️ Security & Cryptographic Posture
-This project tracks Software & Cryptographic Bill of Materials (SBOM & CBOM) and Post-Quantum Cryptography (PQC) readiness. See the latest [Cryptographic Audit & PQC Migration Report](docs/security/CRYPTOGRAPHIC_AUDIT.md).
+## Automated SBOM & CBOM Supply Chain Pipeline
+
+To ensure end-to-end supply chain transparency and track our post-quantum cryptography (PQC) readiness, this repository includes an automated pipeline for generating and verifying Software & Cryptographic Bills of Materials (SBOM & CBOM). See the latest [Cryptographic Audit & PQC Migration Report](docs/security/CRYPTOGRAPHIC_AUDIT.md).
+
+### Artifacts Generated
+
+Artifacts are output to the `oss/` directory:
+- **`oss/sbom.cyclonedx.json`**: CycloneDX JSON Software Bill of Materials (generated via Anchore / Syft).
+- **`oss/sbom.spdx.json`**: SPDX JSON Software Bill of Materials (generated via Anchore / Syft).
+- **`oss/cbom.json`**: CycloneDX Cryptographic Bill of Materials detailing cryptographic primitives, algorithms, key lengths, and certificate components (generated via `cbomkit`).
+- **`oss/crypto-callsites.json`**: Static AST-discovered cryptographic callsites across Python and JavaScript/TypeScript source code.
+- **`oss/crypto-analysis.json` & `oss/crypto-summary.md`**: PQC migration assessment classifying quantum-safe (e.g. ML-DSA, ML-KEM) vs. quantum-vulnerable cryptography.
+
+### Local Script Usage
+
+You can generate, scan, and verify bill of materials artifacts locally using the scripts in `scripts/`:
+
+```bash
+# 1. Generate full SBOM and CBOM artifacts
+bash scripts/generate_boms.sh
+
+# 2. Run AST semantic cryptographic callsite scanner & reconcile with CBOM
+python3 scripts/scan_crypto_ast.py . --cbom oss/cbom.json --output-json oss/crypto-callsites.json
+
+# 3. Analyze cryptographic algorithms and PQC readiness
+python3 scripts/analyze_cbom.py oss/cbom.json \
+  --sbom oss/sbom.cyclonedx.json \
+  --json oss/crypto-analysis.json \
+  --markdown oss/crypto-summary.md
+
+# 4. Run automated verification test harness
+bash scripts/test_boms.sh oss
+```
+
+### CI Pipeline Stages
+
+The GitHub Actions workflow (`.github/workflows/sbom-cbom.yml`) runs on push and pull request events using Node 24 actions:
+1. **Dual SBOM Generation**: Anchore / Syft generates CycloneDX and SPDX format SBOMs.
+2. **CBOM Generation**: `cbomkit-action` generates a CycloneDX CBOM.
+3. **AST Cryptographic Analysis**: `scripts/scan_crypto_ast.py` scans source code to identify and reconcile cryptographic callsites.
+4. **Verification Test Harness**: `scripts/test_boms.sh` enforces schema integrity and non-empty algorithm declarations.
+5. **PQC Readiness Reporting**: `scripts/analyze_cbom.py` publishes an audit summary to the GitHub Actions Job Summary and commits `docs/security/CRYPTOGRAPHIC_AUDIT.md`.
+6. **Artifact Upload**: Retains all BOM outputs (`oss/`) for 90 days.
+
+For architectural decisions, context, and consequences, consult [ADR-008: Automated SBOM and CBOM Supply Chain Governance](docs/decisions/0008-automated-sbom-cbom-supply-chain-governance.md).
+
