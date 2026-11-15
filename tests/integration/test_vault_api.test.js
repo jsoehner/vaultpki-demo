@@ -6,7 +6,7 @@ describe('Vault API Integration', () => {
 
   beforeAll(() => {
     try {
-      execSync('docker-compose up -d', { stdio: 'pipe' });
+      execSync('docker compose up -d 2>/dev/null || docker-compose up -d', { stdio: 'pipe' });
       stackStarted = true;
     } catch (e) {
       console.warn('[Vault API Integration] Docker daemon or images unavailable; skipping live container tests.');
@@ -16,7 +16,7 @@ describe('Vault API Integration', () => {
   afterAll(() => {
     if (stackStarted) {
       try {
-        execSync('docker-compose down', { stdio: 'pipe' });
+        execSync('docker compose down 2>/dev/null || docker-compose down', { stdio: 'pipe' });
       } catch (e) {
         // ignore cleanup errors
       }
