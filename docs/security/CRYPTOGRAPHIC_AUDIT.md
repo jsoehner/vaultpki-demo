@@ -15,9 +15,9 @@
 
 | Evaluation Layer | Coverage / Status | Audit Confidence Assessment |
 |---|---|---|
-| **First-Party Code (`src/`, `scripts/`)** | **100% Audited** (4 Crypto Primitive(s) Inventoried across Configuration (1), JavaScript (1), PKI/Certificate (3), Shell (14)) | 🟢 **HIGH** (Direct AST & SAST verified) |
-| **Third-Party Supply Chain** | **93.8%** (15 of 16 dependencies cataloged) | 🟢 HIGH (Known profiles assimilated) |
-| **Overall Audit Confidence Score** | **94.1%** | 🟢 HIGH (1 unassimilated supply chain dependencies) |
+| **First-Party Code (`src/`, `scripts/`)** | **100% Audited** (4 Crypto Primitive(s) Inventoried across Configuration (1), JavaScript (2), PKI/Certificate (3), Shell (14)) | 🟢 **HIGH** (Direct AST & SAST verified) |
+| **Third-Party Supply Chain** | **83.3%** (15 of 18 dependencies cataloged) | 🟢 HIGH (Known profiles assimilated) |
+| **Overall Audit Confidence Score** | **84.2%** | 🟢 HIGH (3 unassimilated supply chain dependencies) |
 
 | **System OS Inventory** | **Pending Update** | 🟡 **Warning** (Local OS crypto components not yet inventoried) |
 
@@ -25,20 +25,20 @@
 
 | Component Name | Primitive | Key/Parameter Set | PQC Standard | Provenance / Location(s) |
 |---|---|---|---|---|
-| `ML-DSA-65` | signature | 65 | ML-DSA (FIPS 204) | First-Party Code (SAST/AST)<br>`setup-pki.sh:60`<br>`setup-pki.sh:62`<br>`setup-pki.sh:91`<br>`setup-pki.sh:123`<br>`config/vault-init.sh:71`<br>`config/vault-init.sh:73`<br>`config/vault-init.sh:103`<br>`config/vault-init.sh:132` |
+| `ML-DSA-65` | signature | 65 | ML-DSA (FIPS 204) | First-Party Code (SAST/AST)<br>`setup-pki.sh:60`<br>`setup-pki.sh:62`<br>`setup-pki.sh:91`<br>`setup-pki.sh:123`<br>`config/vault-init.sh:69`<br>`config/vault-init.sh:71`<br>`config/vault-init.sh:101`<br>`config/vault-init.sh:130` |
 
 ### ⚠️ Quantum-Vulnerable Assets & Remediation Plan
 
 | Component / Algorithm | Type / Primitive | Key Length / Curve | Recommended Target | Provenance / Context |
 |---|---|---|---|---|
-| **`RSA-2048`**<br><sub>RSA-2048</sub> | algorithm / signature | 2048 | **ML-KEM-768 / Kyber (FIPS 203)** | First-Party Code (SAST/AST)<br>`setup-pki.sh:66`<br><sub><code>ttl=87600h key_type=rsa key_bits=4096</code></sub><br><br>`setup-pki.sh:86`<br><sub><code>key_type=rsa key_bits=4096 \| jq -r ".data.csr" > intermediate.csr</code></sub><br><br>`setup-pki.sh:116`<br><sub><code>max_ttl=8760h key_type=rsa key_bits=2048 \</code></sub><br><br>`config/vault-init.sh:77`<br><sub><code>ttl=87600h key_type=rsa key_bits=4096</code></sub><br><br>`config/vault-init.sh:98`<br><sub><code>key_type=rsa key_bits=4096 > /tmp/intermediate.csr</code></sub><br><br>`config/vault-init.sh:125`<br><sub><code>max_ttl=8760h key_type=rsa key_bits=2048 \</code></sub> |
+| **`RSA-2048`**<br><sub>RSA-2048</sub> | algorithm / signature | 2048 | **ML-KEM-768 / Kyber (FIPS 203)** | First-Party Code (SAST/AST)<br>`setup-pki.sh:66`<br><sub><code>ttl=87600h key_type=rsa key_bits=4096</code></sub><br><br>`setup-pki.sh:86`<br><sub><code>key_type=rsa key_bits=4096 \| jq -r ".data.csr" > intermediate.csr</code></sub><br><br>`setup-pki.sh:116`<br><sub><code>max_ttl=8760h key_type=rsa key_bits=2048 \</code></sub><br><br>`config/vault-init.sh:75`<br><sub><code>ttl=87600h key_type=rsa key_bits=4096</code></sub><br><br>`config/vault-init.sh:96`<br><sub><code>key_type=rsa key_bits=4096 > /tmp/intermediate.csr</code></sub><br><br>`config/vault-init.sh:123`<br><sub><code>max_ttl=8760h key_type=rsa key_bits=2048 \</code></sub> |
 
 ### 🔒 Classical Symmetric & Digest Assets
 
 | Component Name | Primitive | Key Length | Quantum Resistance Assessment | Provenance / Location(s) |
 |---|---|---|---|---|
 | `TLS-1.3` | protocol | v1.3 | TLS 1.3 Transport (Enable hybrid X25519MLKEM768 via OpenSSL 3.5+) | First-Party Code (SAST/AST)<br>`nginx.conf:7` |
-| `X.509-Certificate` | certificate | X.509 | Review key length for Grover resistance | First-Party Code (SAST/AST)<br>`dashboard/server.js:26`<br>`certs/test.example.com.crt:1`<br>`certs/test.example.com.crt:31`<br>`certs/test.example.com.crt:65` |
+| `X.509-Certificate` | certificate | X.509 | Review key length for Grover resistance | First-Party Code (SAST/AST)<br>`dashboard/lib/cert_manager.js:18`<br>`dashboard/lib/cert_manager.js:25`<br>`certs/test.example.com.crt:1`<br>`certs/test.example.com.crt:31`<br>`certs/test.example.com.crt:65` |
 
 ### ⚠️ Unassimilated Third-Party Binaries & Cryptographic Blind Spots
 
@@ -46,6 +46,8 @@
 
 | Dependency Name | Version | Package URL (purl) | Status |
 |---|---|---|---|
+| `undici-types` | 8.10.2 | `pkg:npm/undici-types@8.10.2` | 🟡 Unassimilated (No upstream CBOM) |
+| `vaultpki-demo` | 1.0.0 | `pkg:npm/vaultpki-demo@1.0.0` | 🟡 Unassimilated (No upstream CBOM) |
 | `undici-types` | 8.7.0 | `pkg:npm/undici-types@8.7.0` | 🟡 Unassimilated (No upstream CBOM) |
 
 ### ⚛️ Post-Quantum Cryptography (PQC) Modernization Roadmap
