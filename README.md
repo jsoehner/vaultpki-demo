@@ -7,9 +7,14 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 ## Quick Start
 
 1. **Run the orchestrator**:
-   ```bash
-   ./run_demo.sh
-   ```
+   - **Linux / macOS**:
+     ```bash
+     ./run_demo.sh
+     ```
+   - **Windows (PowerShell)**:
+     ```powershell
+     .\run_demo.ps1
+     ```
    This stops any existing stack, starts the services, automatically initializes/unseals Vault (with a graceful fallback to RSA if post-quantum ML-DSA-65 keys are unsupported), and waits for the PKI trust chain setup to complete.
 
 2. **Check the Live Dashboard**:
@@ -17,9 +22,14 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
    *Note: Ensure `DASHBOARD_API_KEY` is set in your environment or docker-compose file.*
 
 3. **Watch rotation via CLI**:
-   ```bash
-   ./watch-rotation.sh
-   ```
+   - **Linux / macOS**:
+     ```bash
+     ./watch-rotation.sh
+     ```
+   - **Windows (PowerShell)**:
+     ```powershell
+     .\watch-rotation.ps1
+     ```
 
 ---
 
@@ -27,12 +37,12 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 
 | Command / Run Tool | Scope | Description |
 |--------------------|-------|-------------|
-| `./run_demo.sh` | Orchestration | Starts the stack, initializes Vault with fallback support, and prints health status |
+| `./run_demo.sh` / `.\run_demo.ps1` | Orchestration | Starts the stack, initializes Vault with fallback support, and prints health status |
 | `docker-compose up -d` | Docker Stack | Starts all services (Vault, NGINX, Vault Agent, Vault Init, Dashboard, Worker) |
 | `docker-compose down` | Docker Stack | Stops and cleans up all active container resources |
-| `./setup-pki.sh` | Shell Script | Manual wrapper for PKI configuration (fallback/alternative to `vault-init`) |
-| `./watch-rotation.sh` | Shell Script | CLI monitor that outputs certificate information on file updates |
-| `./check-cert.sh` | Shell Script | Checks the details of the generated leaf certificate |
+| `./setup-pki.sh` / `.\setup-pki.ps1` | Shell / PowerShell | Manual wrapper for PKI configuration (fallback/alternative to `vault-init`) |
+| `./watch-rotation.sh` / `.\watch-rotation.ps1` | Shell / PowerShell | CLI monitor that outputs certificate information on file updates |
+| `./check-cert.sh` / `.\check-cert.ps1` | Shell / PowerShell | Checks the details of the generated leaf certificate |
 | `npm install` | Local Node.js | Installs development tools and type mappings |
 | `npm run dashboard` | Local Node.js | Launches the monitoring dashboard backend server locally |
 | `npm test` | Local Node.js | Runs Vitest unit tests for the dashboard and certificate manager |
@@ -68,6 +78,7 @@ For in-depth architectural choices, context, and consequences, consult our Archi
 - [ADR-007: Graceful PQC Fallback and Unified Orchestration](file://docs/decisions/0007-graceful-pqc-fallback-and-orchestration.md)
 - [ADR-008: Automated SBOM and CBOM Supply Chain Governance](file://docs/decisions/0008-automated-sbom-cbom-supply-chain-governance.md)
 - [ADR-009: Security Hardening and Trusted Repository Migration](file://docs/decisions/0009-security-hardening-and-trusted-repo-migration.md)
+- [ADR-010: Cross-Platform Windows PowerShell Orchestration](file://docs/decisions/0010-cross-platform-powershell-orchestration.md)
 - [ADR-012: Worker Isolation Policy](file://docs/decisions/0012-worker-isolation-policy.md)
 
 See the complete index of architectural decisions in [docs/decisions/README.md](file://docs/decisions/README.md) and the comprehensive security evaluation in [docs/security/SECURITY_POSTURE.md](file://docs/security/SECURITY_POSTURE.md).

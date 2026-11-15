@@ -13,4 +13,5 @@ This directory documents the key architectural decisions made in the Vault PKI D
 | [ADR-007](0007-graceful-pqc-fallback-and-orchestration.md) | Graceful PQC Fallback and Unified Orchestration | Accepted | 2026-09-25 |
 | [ADR-008](0008-automated-sbom-cbom-supply-chain-governance.md) | Automated SBOM and CBOM Supply Chain Governance | Accepted | 2026-10-11 |
 | [ADR-009](0009-security-hardening-and-trusted-repo-migration.md) | Security Hardening and Trusted Repository Migration | Accepted | 2026-11-15 |
+| [ADR-010](0010-cross-platform-powershell-orchestration.md) | Cross-Platform Windows PowerShell Orchestration | Accepted | 2026-11-15 |
 | [ADR-012](0012-worker-isolation-policy.md) | Worker Isolation Policy | Accepted | 2026-09-05 |
