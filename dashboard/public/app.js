@@ -194,7 +194,11 @@ function startCountdown() {
 // Load initial status
 async function loadStatus() {
   try {
-    const res = await fetch('/api/status');
+    const res = await fetch('/api/status', {
+      headers: {
+        'X-API-KEY': 'default_secret_key_change_me'
+      }
+    });
     const data = await res.json();
     certsData = data.certs;
     rotationHistory = data.history;

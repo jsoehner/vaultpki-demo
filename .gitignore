@@ -21,3 +21,13 @@ config/vault-keys.txt
 
 # SBOM & CBOM artifacts
 oss/
+
+# Python & Testing artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+bandit_results.json
+semgrep_audit_results.json
+scripts_backup/
+dashboard/signal.txt
+piolium/

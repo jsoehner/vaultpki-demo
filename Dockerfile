@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM oss.jsigroup.local:8080/alpine:latest
 
 # Upgrade existing packages to patch vulnerabilities and install necessary utilities
 RUN apk upgrade --no-cache && \

@@ -35,7 +35,10 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 | `./check-cert.sh` | Shell Script | Checks the details of the generated leaf certificate |
 | `npm install` | Local Node.js | Installs development tools and type mappings |
 | `npm run dashboard` | Local Node.js | Launches the monitoring dashboard backend server locally |
-| `npm test` | Local Node.js | Runs the automated Puppeteer browser integration test |
+| `npm test` | Local Node.js | Runs Vitest unit tests for the dashboard and certificate manager |
+| `npm run test:integration` | Local Python | Runs Pytest integration test suite for Vault initialization and worker signals |
+| `npm run test:all` | Node.js & Pytest | Executes complete unit and integration test suites across Python and JavaScript |
+| `npm run test:e2e` | Local Node.js | Runs automated browser UI tests via Puppeteer |
 | `python3 hamming_distance.py` | Python Script | Runs local test cases for the Hamming distance utility |
 | `bash scripts/generate_boms.sh` | Shell Script | Generates local CycloneDX/SPDX SBOMs and cbomkit CBOM |
 | `bash scripts/test_boms.sh oss` | Shell Script | Verifies SBOM and CBOM schema compliance and test harness |
@@ -64,6 +67,10 @@ For in-depth architectural choices, context, and consequences, consult our Archi
 - [ADR-006: Post-Quantum Cryptography Migration to ML-DSA Certificates](file://docs/decisions/0006-post-quantum-mldsa-migration.md)
 - [ADR-007: Graceful PQC Fallback and Unified Orchestration](file://docs/decisions/0007-graceful-pqc-fallback-and-orchestration.md)
 - [ADR-008: Automated SBOM and CBOM Supply Chain Governance](file://docs/decisions/0008-automated-sbom-cbom-supply-chain-governance.md)
+- [ADR-009: Security Hardening and Trusted Repository Migration](file://docs/decisions/0009-security-hardening-and-trusted-repo-migration.md)
+- [ADR-012: Worker Isolation Policy](file://docs/decisions/0012-worker-isolation-policy.md)
+
+See the complete index of architectural decisions in [docs/decisions/README.md](file://docs/decisions/README.md) and the comprehensive security evaluation in [docs/security/SECURITY_POSTURE.md](file://docs/security/SECURITY_POSTURE.md).
 
 ---
 

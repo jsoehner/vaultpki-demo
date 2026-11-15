@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dashboard": "node dashboard/server.js",
-    "test": "node dashboard_test.js"
+    "test": "vitest run tests/unit",
+    "test:integration": "pytest tests/integration",
+    "test:all": "vitest run tests/unit && pytest tests/unit && pytest tests/integration && vitest run tests/integration",
+    "test:e2e": "node dashboard_test.js"
   },
   "license": "ISC",
   "dependencies": {
@@ -14,6 +17,9 @@
   "devDependencies": {
     "@types/node": "^26.1.1",
     "puppeteer": "^25.3.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vitest": "^1.0.0",
+    "pytest": "^7.0.0",
+    "@playwright/test": "^1.40.0"
   }
 }

@@ -50,8 +50,6 @@ else
     echo "--------------------------------" 
 
     # Write to local file for script persistence (should be cleaned up or handled by the user)
-    echo "UNSEAL_KEY=$UNSEAL_KEY" > /vault/config/vault-keys.txt
-    echo "ROOT_TOKEN=$ROOT_TOKEN" >> /vault/config/vault-keys.txt
 
     echo "Unsealing Vault..."
     vault operator unseal "$UNSEAL_KEY"

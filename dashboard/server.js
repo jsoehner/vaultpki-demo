@@ -1,54 +1,33 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const crypto = require('crypto');
+const { getCertDetails } = require('./lib/cert_manager');
 
 const PORT = process.env.PORT || 8080;
 const CERT_PATH = process.env.CERT_PATH || path.join(__dirname, 'certs', 'test.example.com.crt');
+const SIGNAL_FILE = path.join(__dirname, 'signal.txt');
 const API_KEY = process.env.DASHBOARD_API_KEY || 'default_secret_key_change_me';
+
 let rotationHistory = [];
 let lastSerial = null;
+let sseClients = [];
 
-// Helper to parse certificates from PEM bundle
-function getCertDetails() {
-  try {
-    if (!fs.existsSync(CERT_PATH)) {
-      return null;
-    }
-    const content = fs.readFileSync(CERT_PATH, 'utf8');
-    const pemBlocks = content
-      .split('-----END CERTIFICATE-----')
-      .map(x => x.trim() + '\n-----END CERTIFICATE-----')
-      .filter(x => x.includes('BEGIN CERTIFICATE'));
-
-    const parsedCerts = pemBlocks.map((pem, index) => {
-      try {
-        const cert = new crypto.X509Certificate(pem);
-        return {
-          type: index === 0 ? 'Leaf (NGINX)' : index === 1 ? 'Intermediate CA' : 'Root CA',
-          subject: cert.subject,
-          issuer: cert.issuer,
-          serialNumber: cert.serialNumber,
-          validFrom: cert.validFrom,
-          validTo: cert.validTo,
-          fingerprint: cert.fingerprint,
-          algorithm: cert.publicKey ? cert.publicKey.asymmetricKeyType : 'unknown'
-        };
-      } catch (e) {
-        return null;
-      }
-    }).filter(Boolean);
-
-    return parsedCerts;
-  } catch (error) {
-    console.error('Error parsing certificates:', error);
-    return null;
+function isAuthorized(req) {
+  if (!API_KEY) return true;
+  const authHeader = req.headers['authorization'];
+  const xApiKey = req.headers['x-api-key'];
+  if (authHeader && authHeader.startsWith('Bearer ') && authHeader.substring(7) === API_KEY) {
+    return true;
   }
+  if (xApiKey && xApiKey === API_KEY) {
+    return true;
+  }
+  return false;
 }
 
 // Initialize history
 function initTracker() {
-  const certs = getCertDetails();
+  const certs = getCertDetails(CERT_PATH);
   if (certs && certs.length > 0) {
     lastSerial = certs[0].serialNumber;
     rotationHistory.push({
@@ -69,7 +48,7 @@ if (!fs.existsSync(certDir)) {
 fs.watch(certDir, (eventType, filename) => {
   if (filename === path.basename(CERT_PATH)) {
     setTimeout(() => {
-      const certs = getCertDetails();
+      const certs = getCertDetails(CERT_PATH);
       if (certs && certs.length > 0) {
         const leaf = certs[0];
         if (leaf.serialNumber !== lastSerial) {
@@ -96,8 +75,6 @@ fs.watch(certDir, (eventType, filename) => {
   }
 });
 
-// Worker Logic: Listen for signal file block removed for security - handled by worker.js
-
 // Create HTTP server
 const server = http.createServer((req, res) => {
   const origin = req.headers.origin;
@@ -105,7 +82,7 @@ const server = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-KEY');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -113,8 +90,13 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // API Rotate Endpoint - Now just signals the worker
+  // API Rotate Endpoint - signals the worker
   if (req.url === '/api/rotate' && req.method === 'POST') {
+    if (!isAuthorized(req)) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'Unauthorized' }));
+      return;
+    }
     try {
       fs.writeFileSync(SIGNAL_FILE, 'RESTART');
       res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -129,7 +111,12 @@ const server = http.createServer((req, res) => {
 
   // API Status Endpoint
   if (req.url === '/api/status') {
-    const certs = getCertDetails();
+    if (!isAuthorized(req)) {
+      res.writeHead(401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'Unauthorized' }));
+      return;
+    }
+    const certs = getCertDetails(CERT_PATH);
     rotationHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
