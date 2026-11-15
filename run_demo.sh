@@ -30,8 +30,30 @@ if ! docker compose version &> /dev/null; then
     fi
 fi
 
+# Determine and validate image registry prefix
+if [ -z "${REGISTRY_PREFIX:-}" ]; then
+    TRUSTED_PREFIX="oss.jsigroup.local:8080/"
+    TRUSTED_IMAGE="${TRUSTED_PREFIX}hashicorp/vault:latest"
+    if docker image inspect "$TRUSTED_IMAGE" &> /dev/null; then
+        echo -e "${GREEN}Using locally cached images from trusted registry prefix: ${TRUSTED_PREFIX}${NC}"
+        export REGISTRY_PREFIX="$TRUSTED_PREFIX"
+    elif docker manifest inspect "$TRUSTED_IMAGE" &> /dev/null; then
+        echo -e "${GREEN}Verified trusted registry: ${TRUSTED_PREFIX}${NC}"
+        export REGISTRY_PREFIX="$TRUSTED_PREFIX"
+    else
+        echo -e "${YELLOW}[!] Note: Images not found on trusted registry 'oss.jsigroup.local:8080'.${NC}"
+        echo -e "${YELLOW}    Gracefully falling back to Docker Hub upstream images.${NC}"
+        export REGISTRY_PREFIX=""
+    fi
+fi
+
 echo -e "${YELLOW}Stopping any existing containers and cleaning volumes...${NC}"
 $COMPOSE_CMD down -v
+
+# If no vault keys exist, clean leftover raft storage so Vault can initialize fresh
+if [ ! -f "config/vault-keys.txt" ] && [ -d "data" ]; then
+    rm -rf data/* certs/* agent/roleid agent/secretid 2>/dev/null || true
+fi
 
 echo -e "${YELLOW}Spinning up the Vault PKI stack...${NC}"
 $COMPOSE_CMD up -d
@@ -78,6 +100,6 @@ docker ps --filter name=vault- --filter name=demo-nginx --format "table {{.Names
 echo -e "\n${GREEN}${BOLD}Demo stack is running and healthy!${NC}"
 echo -e "${BLUE}Access the monitoring dashboard at: ${NC}${YELLOW}http://127.0.0.1:8080${NC}"
 echo -e "${BLUE}Access secure NGINX endpoint at:    ${NC}${YELLOW}https://127.0.0.1:8443${NC}"
-echo -e "${BLUE}Watch rotation logs with:          ${NC}${YELLOW}./watch-rotation.sh${NC}"
-echo -e "${BLUE}Check generated certificate with:  ${NC}${YELLOW}./check-cert.sh${NC}"
+echo -e "${BLUE}Watch rotation logs with:          ${NC}${YELLOW}./watch-rotation.sh (or .\\watch-rotation.ps1)${NC}"
+echo -e "${BLUE}Check generated certificate with:  ${NC}${YELLOW}./check-cert.sh (or .\\check-cert.ps1)${NC}"
 echo -e "${BLUE}${BOLD}======================================================${NC}"

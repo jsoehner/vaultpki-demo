@@ -1,0 +1,10 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Ensure shell scripts mounted into Linux containers always retain LF
+*.sh text eol=lf
+config/*.sh text eol=lf
+scripts/*.sh text eol=lf
+
+# PowerShell scripts on Windows
+*.ps1 text eol=crlf

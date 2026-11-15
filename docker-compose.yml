@@ -1,6 +1,6 @@
 services:
   vault:
-    image: oss.jsigroup.local:8080/hashicorp/vault:latest
+    image: ${REGISTRY_PREFIX:-}hashicorp/vault:latest
     container_name: vault-pki-demo
     ports:
       - "127.0.0.1:8200:8200"
@@ -15,7 +15,7 @@ services:
       - IPC_LOCK
 
   nginx:
-    image: oss.jsigroup.local:8080/nginx:latest
+    image: ${REGISTRY_PREFIX:-}nginx:latest
     container_name: demo-nginx
     ports:
       - "127.0.0.1:8443:443"
@@ -25,7 +25,7 @@ services:
     command: /bin/sh -c "while [ ! -f /certs/test.example.com.crt ]; do sleep 1; done; exec nginx -g 'daemon off;'"
 
   vault-init:
-    image: oss.jsigroup.local:8080/hashicorp/vault:latest
+    image: ${REGISTRY_PREFIX:-}hashicorp/vault:latest
     container_name: vault-init
     depends_on:
       - vault
@@ -37,7 +37,7 @@ services:
     entrypoint: ["/bin/sh", "/vault/config/vault-init.sh"]
 
   vault-agent:
-    image: oss.jsigroup.local:8080/hashicorp/vault:latest
+    image: ${REGISTRY_PREFIX:-}hashicorp/vault:latest
     container_name: vault-agent
     depends_on:
       vault:
@@ -56,7 +56,7 @@ services:
     entrypoint: ["vault", "agent", "-config=/vault/agent/agent-config.hcl", "-log-level=debug"]
 
   dashboard:
-    image: oss.jsigroup.local:8080/node:alpine
+    image: ${REGISTRY_PREFIX:-}node:alpine
     container_name: vault-pki-dashboard
     ports:
       - "127.0.0.1:8080:8080"
@@ -70,7 +70,7 @@ services:
     command: node server.js
 
   worker:
-    image: oss.jsigroup.local:8080/node:alpine
+    image: ${REGISTRY_PREFIX:-}node:alpine
     container_name: vault-pki-worker
     volumes:
       - ./certs:/usr/src/app/certs

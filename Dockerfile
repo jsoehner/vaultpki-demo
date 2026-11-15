@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=oss.jsigroup.local:8080/alpine:latest
+ARG BASE_IMAGE=alpine:latest
 FROM ${BASE_IMAGE}
 
 # Upgrade existing packages to patch vulnerabilities and install necessary utilities

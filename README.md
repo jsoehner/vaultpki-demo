@@ -111,6 +111,12 @@ If you pin the `aquasecurity/trivy-action` to a specific version (e.g., `v0.28.0
 ### Docker Build Context Permissions
 If your CI workflow (or a local build) runs `docker build .` in the same directory where Vault is running, Docker will attempt to copy the `data/` directory (including `data/raft`) into the build context. Because this folder is owned by root, Docker will throw a `permission denied` error. Always use a `.dockerignore` file to exclude sensitive/system directories (like `.git`, `data`, `certs`, `agent`) from your build context.
 
+### Trusted Registry Image Resolution & Fallback
+If the internal trusted registry (`oss.jsigroup.local:8080`) does not host the required container images or is unavailable, `docker-compose.yml` uses `${REGISTRY_PREFIX:-}` to enable fallback. Both `run_demo.ps1` and `run_demo.sh` automatically probe registry availability and gracefully fall back to official upstream Docker Hub images (`hashicorp/vault:latest`, `nginx:latest`, `node:alpine`).
+
+### Windows CRLF Line Endings in Container Scripts
+When cloning or checking out files on Windows, Git may convert line endings to CRLF (`\r\n`). When shell scripts such as `config/vault-init.sh` are mounted into Linux containers, `/bin/sh` interprets the carriage return as part of command flags, leading to `set: line 2: illegal option -`. The repository enforces LF line endings for all shell scripts via `.gitattributes` (`*.sh text eol=lf`).
+
 ---
 
 ## Automated SBOM & CBOM Supply Chain Pipeline

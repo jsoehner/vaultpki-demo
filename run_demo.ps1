@@ -7,6 +7,9 @@
     access information and endpoint status.
 .PARAMETER MaxWaitSeconds
     Maximum time in seconds to wait for vault-init to complete (default: 30).
+.PARAMETER RegistryPrefix
+    Optional container registry prefix (e.g. 'oss.jsigroup.local:8080/'). If omitted,
+    checks trusted registry availability and falls back gracefully to Docker Hub.
 .EXAMPLE
     .\run_demo.ps1
 .EXAMPLE
@@ -14,7 +17,8 @@
 #>
 [CmdletBinding()]
 param(
-    [int]$MaxWaitSeconds = 30
+    [int]$MaxWaitSeconds = 30,
+    [string]$RegistryPrefix = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -46,19 +50,47 @@ try {
 }
 
 function Invoke-Compose {
-    param(
-        [Parameter(ValueFromRemainingArguments = $true)]
-        [string[]]$ComposeArgs
-    )
     if ($UseDockerComposeStandalone) {
-        & docker-compose @ComposeArgs
+        & docker-compose @args
     } else {
-        & docker compose @ComposeArgs
+        & docker compose @args
+    }
+}
+
+# Determine and validate image registry prefix
+if ($RegistryPrefix) {
+    $env:REGISTRY_PREFIX = $RegistryPrefix
+} elseif (-not $env:REGISTRY_PREFIX) {
+    # Check if trusted registry images exist locally or remotely
+    $trustedPrefix = "oss.jsigroup.local:8080/"
+    $trustedImage = "${trustedPrefix}hashicorp/vault:latest"
+    $hasLocal = (& docker image inspect $trustedImage 2>$null)
+    
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Using locally cached images from trusted registry prefix: $trustedPrefix" -ForegroundColor Green
+        $env:REGISTRY_PREFIX = $trustedPrefix
+    } else {
+        $null = (& docker manifest inspect $trustedImage 2>&1)
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "Verified trusted registry: $trustedPrefix" -ForegroundColor Green
+            $env:REGISTRY_PREFIX = $trustedPrefix
+        } else {
+            Write-Host "[!] Note: Images not found on trusted registry 'oss.jsigroup.local:8080'." -ForegroundColor Yellow
+            Write-Host "    Gracefully falling back to Docker Hub upstream images." -ForegroundColor Yellow
+            $env:REGISTRY_PREFIX = ""
+        }
     }
 }
 
 Write-Host "Stopping any existing containers and cleaning volumes..." -ForegroundColor Yellow
 Invoke-Compose down -v
+
+# If no vault keys exist, clean leftover raft storage so Vault can initialize fresh
+if (-not (Test-Path "config/vault-keys.txt") -and (Test-Path "data")) {
+    Remove-Item -Path "data/*" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item -Path "certs/*" -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item -Path "agent/roleid", "agent/secretid" -Force -ErrorAction SilentlyContinue
+}
 
 Write-Host "Spinning up the Vault PKI stack..." -ForegroundColor Yellow
 Invoke-Compose up -d
