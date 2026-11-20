@@ -9,6 +9,7 @@ certs/
 data/
 agent/
 .env
+.npmrc
 *.pem
 *.csr
 *keys.txt

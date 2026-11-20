@@ -3,18 +3,21 @@
 - **Date:** `2026-11-20`
 - **Verified By:** Jeffs' Automated build and deploy agent
 - **Repository:** `jsoehner/vaultpki-demo`
-- **Baseline Commit:** `5fb915c`
+- **Version:** `v1.1.0`
 - **Status:** ✅ **VERIFIED**
 
 ---
 
-## 1. Trusted OSS Split-Horizon Configuration
+## 1. Trusted OSS Split-Horizon Configuration & OSS Risk Remediation
 
 - **GitHub Actions Variables & Secrets:** Configured `TRUSTED_OSS_CACHE_URL` (`https://jsigroup-oss.duckdns.org`), `TRUSTED_OSS_MODE=virtual`, `TRUSTED_OSS_GPG_EMAIL`, and mTLS client certificate/key secrets (`OSS_MTLS_CLIENT_CERT`, `OSS_MTLS_CLIENT_KEY`).
-- **Local Development:** Local `.env` configured for LAN cache (`TRUSTED_OSS_CACHE_URL`) and excluded via `.gitignore` and `.git/info/exclude` (alongside `uv.toml`, `.mvn/settings.xml`, `.mvn/maven.config`, and `.npmrc`).
+- **Local Development:** Local `.env` and `.npmrc` configured for LAN cache (`TRUSTED_OSS_CACHE_URL`) and excluded via `.gitignore`, `.git/info/exclude`, and `.dockerignore` (alongside `uv.toml`, `.mvn/settings.xml`, and `.mvn/maven.config`).
+- **OSS Risk & Dependabot Alert Remediation (9/9 Resolved):**
+  - Untracked LAN-only `.npmrc` and regenerated `package-lock.json` against `https://registry.npmjs.org` (`0` internal `.local` references; `npm audit`: `0 vulnerabilities`).
+  - Upgraded `vitest` (`^5.1.1`) → resolved `@vitest/mocker@5.1.1` (patches `CVE-2026-112949`, `CVE-2026-112950`), `vite@8.3.8` (patches `CVE-2026-112942`–`CVE-2026-112947`), and `source-map-js@1.2.4` (patches `CVE-2026-93749`).
 - **Registry Findings:**
   - **PyPI (`virtual`):** Reachable and verified (`pytest` and dependencies resolved cleanly via `uv run --index-url .../pypi/virtual/simple`).
-  - **npm:** The local Trusted OSS proxy does not currently serve an npm registry endpoint (`HTTP 404`); Node.js dev dependencies were installed deterministically against `https://registry.npmjs.org` with `--no-package-lock` (note: `package-lock.json` is currently out of sync with `package.json` for `vitest@^1.0.0`).
+  - **npm:** Public `https://registry.npmjs.org` used for lockfile & CI `npm ci` (`0` vulnerabilities); `.npmrc` stays strictly local/untracked so Dependabot and GitHub Actions succeed cleanly.
   - **Docker Images:** Upstream Docker Hub fallback (`hashicorp/vault:latest`, `nginx:latest`, `node:alpine`, `alpine:latest`) functioned as designed.
 
 ---

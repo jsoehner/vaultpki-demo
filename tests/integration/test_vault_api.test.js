@@ -5,8 +5,15 @@ describe('Vault API Integration', () => {
   let stackStarted = false;
 
   beforeAll(() => {
+    if (process.env.CI === 'true' && process.env.RUN_DOCKER_INTEGRATION !== 'true') {
+      console.warn('[Vault API Integration] Skipping live Docker stack startup in CI (set RUN_DOCKER_INTEGRATION=true to enable).');
+      return;
+    }
     try {
-      execSync('docker compose up -d 2>/dev/null || docker-compose up -d', { stdio: 'pipe' });
+      execSync('docker compose up -d 2>/dev/null || docker-compose up -d', {
+        stdio: 'pipe',
+        timeout: 60000,
+      });
       stackStarted = true;
     } catch (e) {
       console.warn('[Vault API Integration] Docker daemon or images unavailable; skipping live container tests.');
@@ -16,7 +23,10 @@ describe('Vault API Integration', () => {
   afterAll(() => {
     if (stackStarted) {
       try {
-        execSync('docker compose down 2>/dev/null || docker-compose down', { stdio: 'pipe' });
+        execSync('docker compose down 2>/dev/null || docker-compose down', {
+          stdio: 'pipe',
+          timeout: 30000,
+        });
       } catch (e) {
         // ignore cleanup errors
       }

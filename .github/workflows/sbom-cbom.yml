@@ -18,10 +18,15 @@ permissions:
   id-token: write
   pull-requests: write
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   generate-and-verify-boms:
     name: Generate, Verify, and Upload BOMs
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository

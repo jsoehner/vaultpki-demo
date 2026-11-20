@@ -24,11 +24,17 @@ on:
       - 'package-lock.json'
       - '.github/workflows/security-testing.yml'
 
-permissions: read-all
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   secret-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: read
 
@@ -45,9 +51,9 @@ jobs:
 
   container-vulnerability-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
-      security-events: write
 
     steps:
       - name: Checkout repository
@@ -65,7 +71,7 @@ jobs:
           load: true
           tags: local-build:${{ github.sha }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max' || '' }}
 
       - name: Scan Docker image for vulnerabilities (Trivy)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
@@ -79,15 +85,20 @@ jobs:
 
   sast-code-scan:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
-      security-events: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Run Semgrep SAST Scan
-        uses: semgrep/semgrep-action@713efdd345f3035192eaa63f56867b88e63e4e5d # v1
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
-          config: p/security-audit p/owasp-top-ten
+          python-version: '3.11'
+
+      - name: Run Semgrep SAST Scan
+        run: |
+          pip install --no-cache-dir semgrep
+          semgrep scan --config p/security-audit --config p/owasp-top-ten --error

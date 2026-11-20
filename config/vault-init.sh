@@ -4,8 +4,15 @@ set -e
 export VAULT_ADDR="http://vault:8200"
 
 echo "Waiting for Vault to start..."
+MAX_RETRIES=30
+RETRY_COUNT=0
 until vault status -format=json 2>/dev/null || [ $? -eq 2 ]; do
-  echo "Vault is not ready yet. Retrying..."
+  RETRY_COUNT=$((RETRY_COUNT + 1))
+  if [ "$RETRY_COUNT" -ge "$MAX_RETRIES" ]; then
+    echo "Error: Timed out waiting for Vault after ${MAX_RETRIES}s."
+    exit 1
+  fi
+  echo "Vault is not ready yet. Retrying (${RETRY_COUNT}/${MAX_RETRIES})..."
   sleep 1
 done
 
