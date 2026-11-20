@@ -8,7 +8,7 @@
     "test": "vitest run tests/unit",
     "test:integration": "pytest tests/integration",
     "test:all": "vitest run tests/unit && pytest tests/unit && pytest tests/integration && vitest run tests/integration",
-    "test:e2e": "node dashboard_test.js"
+    "test:e2e": "node tests/e2e/dashboard_test.js"
   },
   "license": "ISC",
   "dependencies": {

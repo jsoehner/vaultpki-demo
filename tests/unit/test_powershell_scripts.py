@@ -5,9 +5,9 @@ import pytest
 
 SCRIPTS = [
     "run_demo.ps1",
-    "watch-rotation.ps1",
-    "check-cert.ps1",
-    "setup-pki.ps1",
+    os.path.join("scripts", "pki", "watch-rotation.ps1"),
+    os.path.join("scripts", "pki", "check-cert.ps1"),
+    os.path.join("scripts", "pki", "setup-pki.ps1"),
 ]
 
 def test_powershell_scripts_exist():

@@ -17,7 +17,7 @@ on:
       - 'config/**'
       - 'agent/**'
       - 'tests/**'
-      - 'hamming_distance.py'
+      - 'scripts/**'
       - 'Dockerfile'
       - 'docker-compose.yml'
       - 'package.json'

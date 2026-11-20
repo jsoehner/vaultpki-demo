@@ -100,6 +100,6 @@ docker ps --filter name=vault- --filter name=demo-nginx --format "table {{.Names
 echo -e "\n${GREEN}${BOLD}Demo stack is running and healthy!${NC}"
 echo -e "${BLUE}Access the monitoring dashboard at: ${NC}${YELLOW}http://127.0.0.1:8080${NC}"
 echo -e "${BLUE}Access secure NGINX endpoint at:    ${NC}${YELLOW}https://127.0.0.1:8443${NC}"
-echo -e "${BLUE}Watch rotation logs with:          ${NC}${YELLOW}./watch-rotation.sh (or .\\watch-rotation.ps1)${NC}"
-echo -e "${BLUE}Check generated certificate with:  ${NC}${YELLOW}./check-cert.sh (or .\\check-cert.ps1)${NC}"
+echo -e "${BLUE}Watch rotation logs with:          ${NC}${YELLOW}./scripts/pki/watch-rotation.sh (or .\\scripts\\pki\\watch-rotation.ps1)${NC}"
+echo -e "${BLUE}Check generated certificate with:  ${NC}${YELLOW}./scripts/pki/check-cert.sh (or .\\scripts\\pki\\check-cert.ps1)${NC}"
 echo -e "${BLUE}${BOLD}======================================================${NC}"

@@ -147,7 +147,7 @@ Write-Host "http://127.0.0.1:8080" -ForegroundColor Yellow
 Write-Host "Access secure NGINX endpoint at:    " -NoNewline -ForegroundColor Cyan
 Write-Host "https://127.0.0.1:8443" -ForegroundColor Yellow
 Write-Host "Watch rotation logs with:          " -NoNewline -ForegroundColor Cyan
-Write-Host ".\watch-rotation.ps1 (or ./watch-rotation.sh)" -ForegroundColor Yellow
+Write-Host ".\scripts\pki\watch-rotation.ps1 (or ./scripts/pki/watch-rotation.sh)" -ForegroundColor Yellow
 Write-Host "Check generated certificate with:  " -NoNewline -ForegroundColor Cyan
-Write-Host ".\check-cert.ps1 (or ./check-cert.sh)" -ForegroundColor Yellow
+Write-Host ".\scripts\pki\check-cert.ps1 (or ./scripts/pki/check-cert.sh)" -ForegroundColor Yellow
 Write-Host "======================================================" -ForegroundColor Cyan

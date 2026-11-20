@@ -13,8 +13,8 @@
 
 set -euo pipefail
 
-# Get the absolute path of the skill root directory
-SKILL_DIR=$(cd "$(dirname "$0")/.." && pwd)
+# Get the absolute path of the BOM scripts directory
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 # Default settings
 TARGET_TYPE="docker"      # "docker" or "dir"
@@ -122,7 +122,7 @@ log "Output directory: $OUTPUT_DIR"
 # ------------------------------------------------------------------------------
 if [[ "$SCAN_OS" == "true" ]]; then
     log "Running OS inventory update..."
-    python3 "$SKILL_DIR/scripts/update_os_inventory.py"
+    python3 "$SCRIPT_DIR/update_os_inventory.py"
     log "OS inventory update complete."
 fi
 
@@ -155,13 +155,13 @@ log "SBOM generated successfully: $SBOM_OUTPUT"
 
 # Enrich CycloneDX SBOM with Python or Gradle dependencies when scanning a directory
 if [[ "$TARGET_TYPE" == "dir" && "$SBOM_FORMAT" == "cyclonedx-json" ]]; then
-    if [[ -f "${SKILL_DIR}/scripts/enrich_sbom_python.py" && ( -f "${TARGET}/requirements.txt" || -f "${TARGET}/pyproject.toml" ) ]]; then
+    if [[ -f "${SCRIPT_DIR}/enrich_sbom_python.py" && ( -f "${TARGET}/requirements.txt" || -f "${TARGET}/pyproject.toml" ) ]]; then
         log "Enriching CycloneDX SBOM with Python dependencies..."
-        python3 "${SKILL_DIR}/scripts/enrich_sbom_python.py" "$SBOM_OUTPUT" "$TARGET" || true
+        python3 "${SCRIPT_DIR}/enrich_sbom_python.py" "$SBOM_OUTPUT" "$TARGET" || true
     fi
-    if [[ -f "${SKILL_DIR}/scripts/enrich_sbom_gradle.py" && ( -f "${TARGET}/build.gradle" || -f "${TARGET}/build.gradle.kts" ) ]]; then
+    if [[ -f "${SCRIPT_DIR}/enrich_sbom_gradle.py" && ( -f "${TARGET}/build.gradle" || -f "${TARGET}/build.gradle.kts" ) ]]; then
         log "Enriching CycloneDX SBOM with Gradle dependencies..."
-        (cd "$TARGET" && python3 "${SKILL_DIR}/scripts/enrich_sbom_gradle.py" "$SBOM_OUTPUT") || true
+        (cd "$TARGET" && python3 "${SCRIPT_DIR}/enrich_sbom_gradle.py" "$SBOM_OUTPUT") || true
     fi
 fi
 
@@ -172,7 +172,7 @@ log "Step 2: Resolving Cryptographic Bill of Materials (CBOM)..."
 
 FETCHED_FROM_OCI=false
 if [[ "$TARGET_TYPE" == "docker" ]]; then
-    FETCH_SCRIPT="${SKILL_DIR}/scripts/fetch_oci_cbom.py"
+    FETCH_SCRIPT="${SCRIPT_DIR}/fetch_oci_cbom.py"
     if [[ -f "$FETCH_SCRIPT" ]]; then
         log "Checking OCI Distribution Spec v1.1+ registry referrers for pre-attached upstream CBOM..."
         if python3 "$FETCH_SCRIPT" "$TARGET" -o "$CBOM_OUTPUT" 2>/dev/null; then
@@ -190,9 +190,9 @@ if [[ "$FETCHED_FROM_OCI" == "false" ]]; then
         else
             "${CDXGEN_CMD[@]}" --include-crypto -o "$CBOM_OUTPUT" "$TARGET" || true
         fi
-    elif [[ "$TARGET_TYPE" == "dir" && -f "${SKILL_DIR}/scripts/scan_crypto_ast.py" ]]; then
+    elif [[ "$TARGET_TYPE" == "dir" && -f "${SCRIPT_DIR}/scan_crypto_ast.py" ]]; then
         log "cdxgen not found; initializing CBOM via Semantic AST Cryptographic Scanner..."
-        python3 "${SKILL_DIR}/scripts/scan_crypto_ast.py" "$TARGET" --cbom "$CBOM_OUTPUT" --output-json "${OUTPUT_DIR}/crypto-callsites.json"
+        python3 "${SCRIPT_DIR}/scan_crypto_ast.py" "$TARGET" --cbom "$CBOM_OUTPUT" --output-json "${OUTPUT_DIR}/crypto-callsites.json"
     else
         echo "Error: 'cdxgen' or 'npx' is required to generate CBOM with cryptographic inventory." >&2
         echo "Install via: npm install -g @cyclonedx/cdxgen" >&2
@@ -200,9 +200,9 @@ if [[ "$FETCHED_FROM_OCI" == "false" ]]; then
     fi
 fi
 
-if [[ "$TARGET_TYPE" == "dir" && -f "${SKILL_DIR}/scripts/scan_crypto_ast.py" ]]; then
+if [[ "$TARGET_TYPE" == "dir" && -f "${SCRIPT_DIR}/scan_crypto_ast.py" ]]; then
     log "Reconciling CBOM with Semantic AST Cryptographic Scanner..."
-    python3 "${SKILL_DIR}/scripts/scan_crypto_ast.py" "$TARGET" --cbom "$CBOM_OUTPUT" --output-json "${OUTPUT_DIR}/crypto-callsites.json"
+    python3 "${SCRIPT_DIR}/scan_crypto_ast.py" "$TARGET" --cbom "$CBOM_OUTPUT" --output-json "${OUTPUT_DIR}/crypto-callsites.json"
 fi
 
 log "CBOM resolved successfully: $CBOM_OUTPUT"

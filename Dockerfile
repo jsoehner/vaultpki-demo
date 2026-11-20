@@ -12,7 +12,7 @@ WORKDIR /app
 COPY . /app/
 
 # Make setup and helper scripts executable
-RUN chmod +x *.sh
+RUN chmod +x *.sh scripts/pki/*.sh scripts/bom/*.sh
 
 # By default, running the container might just drop you to bash
 # or run the setup script (assuming the docker socket is mounted)

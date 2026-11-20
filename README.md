@@ -28,11 +28,11 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 3. **Watch rotation via CLI**:
    - **Linux / macOS**:
      ```bash
-     ./watch-rotation.sh
+     ./scripts/pki/watch-rotation.sh
      ```
    - **Windows (PowerShell)**:
      ```powershell
-     .\watch-rotation.ps1
+     .\scripts\pki\watch-rotation.ps1
      ```
 
 ---
@@ -44,18 +44,18 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 | `./run_demo.sh` / `.\run_demo.ps1` | Orchestration | Starts the stack, initializes Vault with fallback support, and prints health status |
 | `docker-compose up -d` | Docker Stack | Starts all services (Vault, NGINX, Vault Agent, Vault Init, Dashboard, Worker) |
 | `docker-compose down` | Docker Stack | Stops and cleans up all active container resources |
-| `./setup-pki.sh` / `.\setup-pki.ps1` | Shell / PowerShell | Manual wrapper for PKI configuration (fallback/alternative to `vault-init`) |
-| `./watch-rotation.sh` / `.\watch-rotation.ps1` | Shell / PowerShell | CLI monitor that outputs certificate information on file updates |
-| `./check-cert.sh` / `.\check-cert.ps1` | Shell / PowerShell | Checks the details of the generated leaf certificate |
-| `npm install` | Local Node.js | Installs development tools and type mappings |
+| `./scripts/pki/setup-pki.sh` / `.\scripts\pki\setup-pki.ps1` | Shell / PowerShell | Manual wrapper for PKI configuration (fallback/alternative to `vault-init`) |
+| `./scripts/pki/watch-rotation.sh` / `.\scripts\pki\watch-rotation.ps1` | Shell / PowerShell | CLI monitor that outputs certificate information on file updates |
+| `./scripts/pki/check-cert.sh` / `.\scripts\pki\check-cert.ps1` | Shell / PowerShell | Checks the details of the generated leaf certificate |
+| `npm ci` | Local Node.js | Installs development tools and type mappings deterministically |
 | `npm run dashboard` | Local Node.js | Launches the monitoring dashboard backend server locally |
 | `npm test` | Local Node.js | Runs Vitest unit tests for the dashboard and certificate manager |
 | `npm run test:integration` | Local Python | Runs Pytest integration test suite for Vault initialization and worker signals |
 | `npm run test:all` | Node.js & Pytest | Executes complete unit and integration test suites across Python and JavaScript |
-| `npm run test:e2e` | Local Node.js | Runs automated browser UI tests via Puppeteer |
-| `python3 hamming_distance.py` | Python Script | Runs local test cases for the Hamming distance utility |
-| `bash scripts/generate_boms.sh` | Shell Script | Generates local CycloneDX/SPDX SBOMs and cbomkit CBOM |
-| `bash scripts/test_boms.sh oss` | Shell Script | Verifies SBOM and CBOM schema compliance and test harness |
+| `npm run test:e2e` | Local Node.js | Runs automated browser UI tests via Puppeteer (`tests/e2e/dashboard_test.js`) |
+| `python3 src/hamming_distance.py` | Python Script | Runs local test cases for the Hamming distance utility |
+| `bash scripts/bom/generate_boms.sh` | Shell Script | Generates local CycloneDX/SPDX SBOMs and cbomkit CBOM |
+| `bash scripts/bom/test_boms.sh oss` | Shell Script | Verifies SBOM and CBOM schema compliance and test harness |
 
 ---
 
