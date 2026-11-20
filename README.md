@@ -1,6 +1,10 @@
 # HashiCorp Vault PKI Demonstration
 
+[![Build Verification](https://img.shields.io/badge/build%20%26%20functional%20verification-2026--11--20%20passing-brightgreen)](docs/BUILD_VERIFICATION.md)
+
 A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)** using **HashiCorp Vault** as a private Certificate Authority (CA) to orchestrate real-time, zero-downtime certificate rotation for local services.
+
+> **Latest Verification (`2026-11-20`):** Verified end-to-end (Docker build, 6-service Vault PKI stack, live certificate rotation, Vitest/Pytest suites, guided browser UI, and `curl` API probes) by **Jeffs' Automated build and deploy agent** — see [`docs/BUILD_VERIFICATION.md`](docs/BUILD_VERIFICATION.md).
 
 ---
 
