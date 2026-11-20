@@ -25,20 +25,20 @@
 
 | Component Name | Primitive | Key/Parameter Set | PQC Standard | Provenance / Location(s) |
 |---|---|---|---|---|
-| `ML-DSA-65` | signature | 65 | ML-DSA (FIPS 204) | First-Party Code (SAST/AST)<br>`setup-pki.sh:60`<br>`setup-pki.sh:62`<br>`setup-pki.sh:91`<br>`setup-pki.sh:123`<br>`setup-pki.ps1:5`<br>`setup-pki.ps1:79`<br>`setup-pki.ps1:83`<br>`setup-pki.ps1:112`<br>`setup-pki.ps1:147`<br>`config/vault-init.sh:72`<br>`config/vault-init.sh:74`<br>`config/vault-init.sh:104`<br>`config/vault-init.sh:133` |
+| `ML-DSA-65` | signature | 65 | ML-DSA (FIPS 204) | First-Party Code (SAST/AST)<br>`setup-pki.sh:60`<br>`setup-pki.sh:62`<br>`setup-pki.sh:91`<br>`setup-pki.sh:123`<br>`setup-pki.ps1:5`<br>`setup-pki.ps1:79`<br>`setup-pki.ps1:83`<br>`setup-pki.ps1:112`<br>`setup-pki.ps1:147`<br>`config/vault-init.sh:79`<br>`config/vault-init.sh:81`<br>`config/vault-init.sh:111`<br>`config/vault-init.sh:140` |
 
 ### ⚠️ Quantum-Vulnerable Assets & Remediation Plan
 
 | Component / Algorithm | Type / Primitive | Key Length / Curve | Recommended Target | Provenance / Context |
 |---|---|---|---|---|
-| **`RSA-2048`**<br><sub>RSA-2048</sub> | algorithm / signature | 2048 | **ML-KEM-768 / Kyber (FIPS 203)** | First-Party Code (SAST/AST)<br>`setup-pki.sh:66`<br><sub><code>ttl=87600h key_type=rsa key_bits=4096</code></sub><br><br>`setup-pki.sh:86`<br><sub><code>key_type=rsa key_bits=4096 \| jq -r ".data.csr" > intermediate.csr</code></sub><br><br>`setup-pki.sh:116`<br><sub><code>max_ttl=8760h key_type=rsa key_bits=2048 \</code></sub><br><br>`setup-pki.ps1:87`<br><sub><code>ttl=87600h key_type=rsa key_bits=4096</code></sub><br><br>`setup-pki.ps1:107`<br><sub><code>key_type=rsa key_bits=4096</code></sub><br><br>`setup-pki.ps1:140`<br><sub><code>max_ttl=8760h key_type=rsa key_bits=2048 `</code></sub><br><br>`config/vault-init.sh:78`<br><sub><code>ttl=87600h key_type=rsa key_bits=4096</code></sub><br><br>`config/vault-init.sh:99`<br><sub><code>key_type=rsa key_bits=4096 > /tmp/intermediate.csr</code></sub><br><br>`config/vault-init.sh:126`<br><sub><code>max_ttl=8760h key_type=rsa key_bits=2048 \</code></sub> |
+| **`RSA-2048`**<br><sub>RSA-2048</sub> | algorithm / signature | 2048 | **ML-KEM-768 / Kyber (FIPS 203)** | First-Party Code (SAST/AST)<br>`setup-pki.sh:66`<br><sub><code>ttl=87600h key_type=rsa key_bits=4096</code></sub><br><br>`setup-pki.sh:86`<br><sub><code>key_type=rsa key_bits=4096 \| jq -r ".data.csr" > intermediate.csr</code></sub><br><br>`setup-pki.sh:116`<br><sub><code>max_ttl=8760h key_type=rsa key_bits=2048 \</code></sub><br><br>`setup-pki.ps1:87`<br><sub><code>ttl=87600h key_type=rsa key_bits=4096</code></sub><br><br>`setup-pki.ps1:107`<br><sub><code>key_type=rsa key_bits=4096</code></sub><br><br>`setup-pki.ps1:140`<br><sub><code>max_ttl=8760h key_type=rsa key_bits=2048 `</code></sub><br><br>`config/vault-init.sh:85`<br><sub><code>ttl=87600h key_type=rsa key_bits=4096</code></sub><br><br>`config/vault-init.sh:106`<br><sub><code>key_type=rsa key_bits=4096 > /tmp/intermediate.csr</code></sub><br><br>`config/vault-init.sh:133`<br><sub><code>max_ttl=8760h key_type=rsa key_bits=2048 \</code></sub> |
 | **`RSA-4096`**<br><sub>RSA-4096</sub> | algorithm / signature | 4096 | **ML-KEM-768 / Kyber (FIPS 203)** | First-Party Code (SAST/AST)<br>`setup-pki.ps1:6`<br><sub><code>graceful RSA-4096 fallback), signs intermediate certificates, creates PKI roles,</code></sub> |
 
 ### 🔒 Classical Symmetric & Digest Assets
 
 | Component Name | Primitive | Key Length | Quantum Resistance Assessment | Provenance / Location(s) |
 |---|---|---|---|---|
-| `X.509-Certificate` | certificate | X.509 | Review key length for Grover resistance | First-Party Code (SAST/AST)<br>`check-cert.ps1:44`<br>`watch-rotation.ps1:56`<br>`dashboard/lib/cert_manager.js:18`<br>`dashboard/lib/cert_manager.js:25`<br>`certs/test.example.com.crt:1`<br>`certs/test.example.com.crt:31`<br>`certs/test.example.com.crt:65` |
+| `X.509-Certificate` | certificate | X.509 | Review key length for Grover resistance | First-Party Code (SAST/AST)<br>`check-cert.ps1:44`<br>`watch-rotation.ps1:56`<br>`certs/test.example.com.crt:1`<br>`certs/test.example.com.crt:31`<br>`certs/test.example.com.crt:65`<br>`dashboard/lib/cert_manager.js:18`<br>`dashboard/lib/cert_manager.js:25` |
 | `TLS-1.3` | protocol | v1.3 | TLS 1.3 Transport (Enable hybrid X25519MLKEM768 via OpenSSL 3.5+) | First-Party Code (SAST/AST)<br>`nginx.conf:7` |
 
 ### ⚠️ Unassimilated Third-Party Binaries & Cryptographic Blind Spots
@@ -47,8 +47,8 @@
 
 | Dependency Name | Version | Package URL (purl) | Status |
 |---|---|---|---|
-| `undici-types` | 8.10.2 | `pkg:npm/undici-types@8.10.2` | 🟡 Unassimilated (No upstream CBOM) |
-| `vaultpki-demo` | 1.0.0 | `pkg:npm/vaultpki-demo@1.0.0` | 🟡 Unassimilated (No upstream CBOM) |
+| `undici-types` | 8.13.0 | `pkg:npm/undici-types@8.13.0` | 🟡 Unassimilated (No upstream CBOM) |
+| `vaultpki-demo` | 1.1.0 | `pkg:npm/vaultpki-demo@1.1.0` | 🟡 Unassimilated (No upstream CBOM) |
 | `undici-types` | 8.7.0 | `pkg:npm/undici-types@8.7.0` | 🟡 Unassimilated (No upstream CBOM) |
 
 ### ⚛️ Post-Quantum Cryptography (PQC) Modernization Roadmap
