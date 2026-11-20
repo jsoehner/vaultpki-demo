@@ -75,11 +75,19 @@ fs.watch(certDir, (eventType, filename) => {
   }
 });
 
+const ALLOWED_ORIGINS = [
+  `http://localhost:${PORT}`,
+  `http://127.0.0.1:${PORT}`,
+  'http://localhost',
+  'http://127.0.0.1',
+];
+
 // Create HTTP server
 const server = http.createServer((req, res) => {
-  const origin = req.headers.origin;
-  if (origin && (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:') || origin === 'http://localhost' || origin === 'http://127.0.0.1')) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
+  const matchedOrigin = ALLOWED_ORIGINS.find(allowed => allowed === req.headers.origin);
+  if (matchedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', matchedOrigin);
+    res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-API-KEY');

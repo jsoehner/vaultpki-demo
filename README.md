@@ -6,6 +6,8 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 
 > **Latest Verification (`2026-11-20`):** Verified end-to-end (Docker build, 6-service Vault PKI stack, live certificate rotation, Vitest/Pytest suites, guided browser UI, and `curl` API probes) by **Jeffs' Automated build and deploy agent** — see [`docs/BUILD_VERIFICATION.md`](docs/BUILD_VERIFICATION.md).
 
+![HashiCorp Vault PKI Architecture Overview](docs/images/vaultpki-architecture.jpg)
+
 ---
 
 ## Quick Start
@@ -60,6 +62,33 @@ A robust, scalable demonstration of automated **Public Key Infrastructure (PKI)*
 ---
 
 ## Architecture & Decisions
+
+```mermaid
+flowchart LR
+  subgraph Control["1. PKI Control Plane"]
+    INIT["vault-init<br/>(Init, Unseal, PQC ML-DSA-65 / RSA Fallback, AppRole)"]
+    VAULT["HashiCorp Vault (:8200)<br/>pki/ Root CA -> pki_int/ Intermediate CA"]
+    INIT --> VAULT
+  end
+
+  subgraph Rotation["2. Zero-Downtime Rotation Plane"]
+    AGENT["Vault Agent<br/>(AppRole Auth, Shared PID Namespace)"]
+    CERTS[("/certs Volume<br/>test.example.com.crt & .key")]
+    NGINX["NGINX HTTPS (:8443)<br/>(Zero-Downtime SIGHUP Reload)"]
+    VAULT --> AGENT
+    AGENT --> CERTS
+    AGENT -- "SIGHUP" --> NGINX
+    CERTS --> NGINX
+  end
+
+  subgraph Monitor["3. Monitoring & Privilege Separation"]
+    DASH["PKI Live Dashboard (:8080)<br/>(Real-Time SSE, X-API-KEY Auth)"]
+    WORKER["Isolated Worker<br/>(Watches signal.txt)"]
+    CERTS --> DASH
+    DASH -- "signal.txt" --> WORKER
+    WORKER -. "Trigger Rotation" .-> AGENT
+  end
+```
 
 The demo environment consists of the following components:
 1. **Vault (CA Host)**: Manages Root and Intermediate CAs.
